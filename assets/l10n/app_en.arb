@@ -1,0 +1,15 @@
+ {
+     "helloWorld": "Hello Flutter Engage!",
+     "@helloWorld": {
+         "description": "The greeting shown to the Flutter Engage attendees"
+     },
+     "hello": "Hello {username}",
+     "@hello": {
+         "description": "TEST for varibles",
+         "placeholders": {
+             "username": {
+                 "type": "String"
+             }
+         }
+     }
+ }
