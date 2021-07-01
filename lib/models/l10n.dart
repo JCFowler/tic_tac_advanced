@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-class L10n {
-  static final all = [
-    const Locale('en', ''),
-    const Locale('ja', ''),
-  ];
-}
+const l10nLanguages = [
+  Locale('en', ''),
+  Locale('ja', ''),
+];

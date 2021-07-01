@@ -7,7 +7,10 @@ import 'game_board_number.dart';
 class NumberBoard extends StatelessWidget {
   final Player player;
 
-  NumberBoard(this.player);
+  const NumberBoard(
+    this.player, {
+    Key? key,
+  }) : super(key: key);
 
   List<Widget> _getNumbers(Map<int, bool> numbers, BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -15,27 +18,22 @@ class NumberBoard extends StatelessWidget {
     numbers.forEach((key, value) {
       list.add(
         GameBoardNumber(
-          key,
-          player,
-          value,
-          width / 7,
+          number: key,
+          player: player,
+          used: value,
+          width: width / 7,
         ),
       );
     });
     return list;
   }
 
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      // padding: const EdgeInsets.all(8.0),
-      child: Consumer<GameProvider>(
-        builder: (ctx, game, _) => Container(
-          // width: width,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _getNumbers(game.numbers(player), context),
-          ),
-        ),
+    return Consumer<GameProvider>(
+      builder: (ctx, game, _) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: _getNumbers(game.numbers(player), context),
       ),
     );
   }

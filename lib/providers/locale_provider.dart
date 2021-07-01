@@ -5,12 +5,10 @@ import '../models/l10n.dart';
 class LocaleProvider with ChangeNotifier {
   Locale? _locale;
 
-  // LocaleProvider(this._locale);
-
   Locale? get locale => _locale;
 
   void setLocale(Locale locale) {
-    if (!L10n.all.contains(locale)) return;
+    if (!l10nLanguages.contains(locale)) return;
 
     _locale = locale;
     notifyListeners();

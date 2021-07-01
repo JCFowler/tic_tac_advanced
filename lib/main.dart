@@ -15,11 +15,13 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {
-    runApp(new MyApp());
+    runApp(const MyApp());
   });
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -33,26 +35,26 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<LocaleProvider>(
         builder: (ctx, locale, _) => MaterialApp(
-          localizationsDelegates: [
+          localizationsDelegates: const [
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             AppLocalizations.delegate,
           ],
-          supportedLocales: L10n.all,
+          supportedLocales: l10nLanguages,
           locale: locale.locale,
           title: 'Tic Tac Advanced',
           theme: ThemeData(
             primarySwatch: Colors.blue,
-            primaryTextTheme: TextTheme(
+            primaryTextTheme: const TextTheme(
               headline6: TextStyle(color: Colors.red),
             ),
             scaffoldBackgroundColor: Colors.blue[50],
           ),
-          home: HomeScreen(),
+          home: const HomeScreen(),
           routes: {
-            SettingsScreen.routeName: (ctx) => SettingsScreen(),
-            GameScreen.routeName: (ctx) => GameScreen(),
+            SettingsScreen.routeName: (ctx) => const SettingsScreen(),
+            GameScreen.routeName: (ctx) => const GameScreen(),
           },
         ),
       ),

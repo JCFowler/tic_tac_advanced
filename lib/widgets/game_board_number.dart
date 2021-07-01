@@ -9,12 +9,13 @@ class GameBoardNumber extends StatelessWidget {
   final bool used;
   final double width;
 
-  GameBoardNumber(
-    this.number,
-    this.player,
-    this.used,
-    this.width,
-  );
+  const GameBoardNumber({
+    Key? key,
+    required this.number,
+    required this.player,
+    required this.used,
+    required this.width,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

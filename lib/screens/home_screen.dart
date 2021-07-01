@@ -5,6 +5,8 @@ import 'game_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
@@ -20,11 +22,11 @@ class HomeScreen extends StatelessWidget {
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                stops: [0, 1],
+                stops: const [0, 1],
               ),
             ),
           ),
-          Container(
+          SizedBox(
             height: deviceSize.height,
             width: deviceSize.width,
             child: Column(
@@ -33,12 +35,12 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Flexible(
                   child: Container(
-                    margin: EdgeInsets.only(bottom: 20.0),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 50.0),
+                    margin: const EdgeInsets.only(bottom: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 50.0),
                     // transform: Matrix4.rotationZ(-15 * pi / 180)
                     //   ..translate(10.0),
-                    child: Text(
+                    child: const Text(
                       'Tic Tac\nAdvanced',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -55,12 +57,12 @@ class HomeScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () => Navigator.of(context)
                             .pushNamed(GameScreen.routeName),
-                        child: Text('Play'),
+                        child: const Text('Play'),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(context)
                             .pushNamed(SettingsScreen.routeName),
-                        child: Text('Settings'),
+                        child: const Text('Settings'),
                       ),
                       Text(AppLocalizations.of(context)!.helloWorld)
                     ],

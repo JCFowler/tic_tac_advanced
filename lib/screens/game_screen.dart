@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../widgets/game_number.dart';
+
 import '../providers/game_provider.dart';
 import '../widgets/custom_app_bar.dart';
-
-import '../models/mark.dart';
+import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
 
-const STROKE_WIDTH = 6.0;
-const HALF_STROKE_WIDTH = STROKE_WIDTH / 2.0;
-const DOUBLE_STROKE_WIDTH = STROKE_WIDTH * 2.0;
+const strokeWidth = 6.0;
+const doubleStrokeWidth = strokeWidth * 2.0;
 
 class GameScreen extends StatefulWidget {
+  const GameScreen({Key? key}) : super(key: key);
+
   static const routeName = '/game';
 
   @override
@@ -50,7 +50,6 @@ class _GameScreenState extends State<GameScreen>
 
   _addMark(int index, GameProvider game) {
     game.addMark(index);
-    print('running..');
     // setState(() {
     //   // if (!omg) {
     //   //   _animationController!.animateBack(0);
@@ -60,17 +59,17 @@ class _GameScreenState extends State<GameScreen>
     // });
 
     if (game.gameOver) {
-      showDialog<Null>(
+      showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text('Game finished!'),
+          title: const Text('Game finished!'),
           actions: [
             TextButton(
               onPressed: () {
                 game.gameResart();
                 Navigator.of(ctx).pop();
               },
-              child: Text('Play again?'),
+              child: const Text('Play again?'),
             ),
           ],
         ),
@@ -81,7 +80,7 @@ class _GameScreenState extends State<GameScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       body: SafeArea(
         child: Consumer<GameProvider>(
           builder: (ctx, game, _) => Stack(
@@ -100,14 +99,14 @@ class _GameScreenState extends State<GameScreen>
                           ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    stops: [0, 1],
+                    stops: const [0, 1],
                   ),
                 ),
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  RotationTransition(
+                  const RotationTransition(
                     turns: AlwaysStoppedAnimation(180 / 360),
                     child: NumberBoard(Player.Player2),
                   ),
@@ -117,10 +116,10 @@ class _GameScreenState extends State<GameScreen>
                         painter: GamePainter(game),
                         child: GridView.builder(
                           shrinkWrap: true,
-                          physics: new NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: 9,
                           gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 3,
                           ),
                           itemBuilder: (ctx, index) {
@@ -143,8 +142,9 @@ class _GameScreenState extends State<GameScreen>
                                   child: game.gameMarks[index] != null
                                       ? game.player == Player.Player2
                                           ? RotationTransition(
-                                              turns: AlwaysStoppedAnimation(
-                                                  180 / 360),
+                                              turns:
+                                                  const AlwaysStoppedAnimation(
+                                                      180 / 360),
                                               child: GameNumber(
                                                   game.gameMarks[index]!),
                                             )
@@ -158,7 +158,7 @@ class _GameScreenState extends State<GameScreen>
                       ),
                     ),
                   ),
-                  NumberBoard(Player.Player1),
+                  const NumberBoard(Player.Player1),
                 ],
               ),
             ],
@@ -179,10 +179,9 @@ class GamePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print('rerun');
     final orangePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = STROKE_WIDTH
+      ..strokeWidth = strokeWidth
       ..color = Colors.orange;
 
     _dividedSize = size.width / 3.0;
@@ -193,30 +192,30 @@ class GamePainter extends CustomPainter {
   }
 
   void drawWinningLine(Canvas canvas, List<int> winningLine, Paint paint) {
-    double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    var x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
 
-    int firstIndex = winningLine.first;
-    int lastIndex = winningLine.last;
+    var firstIndex = winningLine.first;
+    var lastIndex = winningLine.last;
 
     if (firstIndex % 3 == lastIndex % 3) {
       // Vertical Line
       x1 = x2 = firstIndex % 3 * _dividedSize + _dividedSize / 2;
-      y1 = STROKE_WIDTH;
-      y2 = _dividedSize * 3 - STROKE_WIDTH;
+      y1 = strokeWidth;
+      y2 = _dividedSize * 3 - strokeWidth;
     } else if (firstIndex ~/ 3 == lastIndex ~/ 3) {
       // Horizonal line
-      x1 = STROKE_WIDTH;
-      x2 = _dividedSize * 3 - STROKE_WIDTH;
+      x1 = strokeWidth;
+      x2 = _dividedSize * 3 - strokeWidth;
       y1 = y2 = firstIndex ~/ 3 * _dividedSize + _dividedSize / 2;
     } else {
       if (firstIndex == 0) {
-        x1 = y1 = DOUBLE_STROKE_WIDTH;
-        x2 = y2 = _dividedSize * 3 - STROKE_WIDTH;
+        x1 = y1 = doubleStrokeWidth;
+        x2 = y2 = _dividedSize * 3 - strokeWidth;
       } else {
-        x1 = _dividedSize * 3 - STROKE_WIDTH;
-        x2 = DOUBLE_STROKE_WIDTH;
-        y1 = DOUBLE_STROKE_WIDTH;
-        y2 = _dividedSize * 3 - STROKE_WIDTH;
+        x1 = _dividedSize * 3 - strokeWidth;
+        x2 = doubleStrokeWidth;
+        y1 = doubleStrokeWidth;
+        y2 = _dividedSize * 3 - strokeWidth;
       }
     }
 

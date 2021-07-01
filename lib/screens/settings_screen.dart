@@ -6,6 +6,8 @@ import '../models/l10n.dart';
 import '../providers/locale_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
   static const routeName = '/settings';
 
   @override
@@ -16,7 +18,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(),
       body: Column(
         children: [
-          ...L10n.all.map(
+          ...l10nLanguages.map(
             (locale) {
               return ElevatedButton(
                 child: Text(locale.languageCode),

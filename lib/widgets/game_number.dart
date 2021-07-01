@@ -5,7 +5,10 @@ import '../models/mark.dart';
 class GameNumber extends StatelessWidget {
   final Mark mark;
 
-  GameNumber(this.mark);
+  const GameNumber(
+    this.mark, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

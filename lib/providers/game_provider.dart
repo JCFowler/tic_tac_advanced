@@ -4,7 +4,7 @@ import '../models/mark.dart';
 
 // const NUMBERS = [1, 2, 3, 4, 5, 6, 7];
 
-const Map<int, bool> BASE_MAP = {
+const Map<int, bool> baseNumbersMap = {
   1: false,
   2: false,
   3: false,
@@ -14,18 +14,19 @@ const Map<int, bool> BASE_MAP = {
   7: false,
 };
 
+// ignore: constant_identifier_names
 enum Player { Player1, Player2 }
 
 class GameProvider with ChangeNotifier {
   int _selectedNumber = -1;
   Player _player = Player.Player1;
-  Map<Player, Color> _colors = {
+  final Map<Player, Color> _colors = {
     Player.Player1: Colors.blue,
     Player.Player2: Colors.red,
   };
 
-  Map<int, bool> _player1Numbers = new Map<int, bool>.from(BASE_MAP);
-  Map<int, bool> _player2Numbers = new Map<int, bool>.from(BASE_MAP);
+  final Map<int, bool> _player1Numbers = Map<int, bool>.from(baseNumbersMap);
+  final Map<int, bool> _player2Numbers = Map<int, bool>.from(baseNumbersMap);
 
   final Map<int, Mark> _gameMarks = {};
   List<int> _winningLine = [];
@@ -119,11 +120,11 @@ class GameProvider with ChangeNotifier {
       [2, 4, 6],
     ];
 
-    winningLines.forEach((line) {
-      int p1Count = 0;
-      int p2Count = 0;
+    for (var line in winningLines) {
+      var p1Count = 0;
+      var p2Count = 0;
 
-      line.forEach((index) {
+      for (var index in line) {
         if (_gameMarks[index] != null) {
           if (_gameMarks[index]!.player == Player.Player1) {
             ++p1Count;
@@ -135,8 +136,8 @@ class GameProvider with ChangeNotifier {
         if (p1Count >= 3 || p2Count >= 3) {
           _winningLine = line;
         }
-      });
-    });
+      }
+    }
   }
 
   void gameResart() {
