@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../widgets/game_number.dart';
 import '../providers/game_provider.dart';
 import '../widgets/custom_app_bar.dart';
 
@@ -17,10 +18,46 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
-  _addMark(double x, double y, GameProvider game) {
-    double _dividedSize = GamePainter.getDividedSize();
-    game.addMark(x ~/ _dividedSize + (y ~/ _dividedSize) * 3);
+class _GameScreenState extends State<GameScreen>
+// with SingleTickerProviderStateMixin
+{
+  // AnimationController? _animationController;
+  // Animation<double>? _rotateAnimation;
+  // var omg = false;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   _animationController = AnimationController(
+  //     duration: Duration(milliseconds: 500),
+  //     vsync: this,
+  //   )..repeat();
+
+  //   _rotateAnimation = Tween<double>(
+  //     begin: 0.0,
+  //     end: 360.0,
+  //   ).animate(
+  //     CurvedAnimation(parent: _animationController!, curve: Curves.linear),
+  //   );
+  // }
+
+  // @override
+  // void dispose() {
+  //   _animationController!.dispose();
+  //   super.dispose();
+  // }
+
+  _addMark(int index, GameProvider game) {
+    game.addMark(index);
+    print('running..');
+    // setState(() {
+    //   // if (!omg) {
+    //   //   _animationController!.animateBack(0);
+    //   // } else {
+    //   //   _animationController!.animateTo(180);
+    //   // }
+    // });
 
     if (game.gameOver) {
       showDialog<Null>(
@@ -74,23 +111,49 @@ class _GameScreenState extends State<GameScreen> {
                     turns: AlwaysStoppedAnimation(180 / 360),
                     child: NumberBoard(Player.Player2),
                   ),
-                  Center(
-                    child: GestureDetector(
-                      onTapUp: (TapUpDetails details) {
-                        setState(() {
-                          _addMark(
-                            details.localPosition.dx,
-                            details.localPosition.dy,
-                            game,
-                          );
-                        });
-                      },
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: Container(
-                          child: CustomPaint(
-                            painter: GamePainter(game),
+                  Expanded(
+                    child: Center(
+                      child: CustomPaint(
+                        painter: GamePainter(game),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics: new NeverScrollableScrollPhysics(),
+                          itemCount: 9,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
                           ),
+                          itemBuilder: (ctx, index) {
+                            return GestureDetector(
+                              onTap: () => _addMark(index, game),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                  color: Colors.black,
+                                )),
+                                child: Center(
+                                  // child: game.gameMarks[index] != null
+                                  //     ? RotationTransition(
+                                  //         turns: _rotateAnimation!,
+                                  //         child: GameNumber(
+                                  //             game.gameMarks[index]!))
+                                  //     : Container(
+                                  //         child: Text('Hi'),
+                                  //       ),
+                                  child: game.gameMarks[index] != null
+                                      ? game.player == Player.Player2
+                                          ? RotationTransition(
+                                              turns: AlwaysStoppedAnimation(
+                                                  180 / 360),
+                                              child: GameNumber(
+                                                  game.gameMarks[index]!),
+                                            )
+                                          : GameNumber(game.gameMarks[index]!)
+                                      : Container(),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -117,11 +180,6 @@ class GamePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     print('rerun');
-    final blackPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = STROKE_WIDTH
-      ..color = Colors.black;
-
     final orangePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = STROKE_WIDTH
@@ -129,67 +187,9 @@ class GamePainter extends CustomPainter {
 
     _dividedSize = size.width / 3.0;
 
-    canvas.drawLine(
-      Offset(STROKE_WIDTH, _dividedSize - HALF_STROKE_WIDTH),
-      Offset(size.width - STROKE_WIDTH, _dividedSize - HALF_STROKE_WIDTH),
-      blackPaint,
-    );
-
-    canvas.drawLine(
-      Offset(STROKE_WIDTH, _dividedSize * 2 - HALF_STROKE_WIDTH),
-      Offset(size.width - STROKE_WIDTH, _dividedSize * 2 - HALF_STROKE_WIDTH),
-      blackPaint,
-    );
-
-    canvas.drawLine(
-      Offset(_dividedSize - HALF_STROKE_WIDTH, -STROKE_WIDTH),
-      Offset(_dividedSize - HALF_STROKE_WIDTH, size.height - STROKE_WIDTH),
-      blackPaint,
-    );
-
-    canvas.drawLine(
-      Offset(_dividedSize * 2 - HALF_STROKE_WIDTH, -STROKE_WIDTH),
-      Offset(_dividedSize * 2 - HALF_STROKE_WIDTH, size.height - STROKE_WIDTH),
-      blackPaint,
-    );
-
-    game.gameMarks.forEach((index, mark) {
-      draw(canvas, index, mark, blackPaint, game.playerColor(mark.player));
-    });
-
     if (game.gameOver) {
       drawWinningLine(canvas, game.winningLine, orangePaint);
     }
-  }
-
-  void draw(Canvas canvas, int index, Mark mark, Paint paint, Color color) {
-    double left = (index % 3) * _dividedSize + DOUBLE_STROKE_WIDTH * 2.9;
-    double top = (index ~/ 3) * _dividedSize + DOUBLE_STROKE_WIDTH * 1.5;
-    double numberSize = _dividedSize - DOUBLE_STROKE_WIDTH * 4;
-
-    final textStyle = TextStyle(
-      // color: color,
-      fontSize: numberSize,
-      foreground: Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = color,
-    );
-    final textSpan = TextSpan(
-      text: mark.number.toString(),
-      style: textStyle,
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout(
-      minWidth: 20,
-      maxWidth: numberSize,
-    );
-
-    final offset = Offset(left, top);
-    textPainter.paint(canvas, offset);
   }
 
   void drawWinningLine(Canvas canvas, List<int> winningLine, Paint paint) {

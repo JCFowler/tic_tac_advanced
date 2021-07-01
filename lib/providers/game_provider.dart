@@ -39,9 +39,7 @@ class GameProvider with ChangeNotifier {
   }
 
   /// If no player is passed, will get current player.
-  Color playerColor(Player? player) {
-    if (player == null) player = _player;
-
+  Color playerColor(Player player) {
     if (player == Player.Player1) {
       return _colors[Player.Player1] as Color;
     } else {
@@ -65,7 +63,8 @@ class GameProvider with ChangeNotifier {
     if (_selectedNumber != -1 && !gameOver) {
       if (_gameMarks[position] == null ||
           _gameMarks[position]!.number < _selectedNumber) {
-        _gameMarks[position] = Mark(_selectedNumber, _player);
+        _gameMarks[position] =
+            Mark(_selectedNumber, _player, playerColor(_player));
         changePlayer();
         checkForWinningLine();
       }

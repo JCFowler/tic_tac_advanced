@@ -26,6 +26,7 @@ dependencies:
   flutter_localizations:
      sdk: flutter
   intl: ^0.17.0
+  linter: ^1.7.0
   provider: ^5.0.0
 
 dev_dependencies:

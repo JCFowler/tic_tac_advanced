@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/game_provider.dart';
-import 'game_number.dart';
+import 'game_board_number.dart';
 
 class NumberBoard extends StatelessWidget {
   final Player player;
@@ -14,7 +14,7 @@ class NumberBoard extends StatelessWidget {
     List<Widget> list = [];
     numbers.forEach((key, value) {
       list.add(
-        GameNumber(
+        GameBoardNumber(
           key,
           player,
           value,
