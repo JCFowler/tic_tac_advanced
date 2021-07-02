@@ -6,9 +6,9 @@ import '../models/l10n.dart';
 import '../providers/locale_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
-
   static const routeName = '/settings';
+
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

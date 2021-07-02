@@ -1,79 +1,105 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../painters/line_painter.dart';
 import '../providers/game_provider.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
 
-const strokeWidth = 6.0;
-const doubleStrokeWidth = strokeWidth * 2.0;
-
 class GameScreen extends StatefulWidget {
-  const GameScreen({Key? key}) : super(key: key);
-
   static const routeName = '/game';
+
+  const GameScreen({Key? key}) : super(key: key);
 
   @override
   _GameScreenState createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen>
-// with SingleTickerProviderStateMixin
-{
-  // AnimationController? _animationController;
-  // Animation<double>? _rotateAnimation;
-  // var omg = false;
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+  double _progress = 0.0;
+  AnimationController? _numberController;
+  AnimationController? _lineController;
+  Animation<double>? _rotateAnimationFirst;
+  Animation<double>? _rotateAnimationSecond;
+  Animation<double>? _lineAnimation;
 
-  // @override
-  // void initState() {
-  //   super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  //   _animationController = AnimationController(
-  //     duration: Duration(milliseconds: 500),
-  //     vsync: this,
-  //   )..repeat();
+    _numberController = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
 
-  //   _rotateAnimation = Tween<double>(
-  //     begin: 0.0,
-  //     end: 360.0,
-  //   ).animate(
-  //     CurvedAnimation(parent: _animationController!, curve: Curves.linear),
-  //   );
-  // }
+    _lineController = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
 
-  // @override
-  // void dispose() {
-  //   _animationController!.dispose();
-  //   super.dispose();
-  // }
+    _lineAnimation = Tween(begin: 0.0, end: 1.0).animate(_lineController!)
+      ..addListener(() {
+        setState(() {
+          _progress = _lineAnimation!.value;
+        });
+      });
+
+    _rotateAnimationFirst = Tween<double>(
+      begin: 0,
+      end: 0.5,
+    ).animate(
+      CurvedAnimation(parent: _numberController!, curve: Curves.linear),
+    );
+    _rotateAnimationSecond = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(parent: _numberController!, curve: Curves.linear),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lineController!.dispose();
+    _numberController!.dispose();
+    super.dispose();
+  }
 
   _addMark(int index, GameProvider game) {
-    game.addMark(index);
-    // setState(() {
-    //   // if (!omg) {
-    //   //   _animationController!.animateBack(0);
-    //   // } else {
-    //   //   _animationController!.animateTo(180);
-    //   // }
-    // });
+    game.addMark(index).then((addedMark) => {
+          if (addedMark)
+            {
+              setState(() {
+                _numberController!.reset();
+                _numberController!.forward().then((value) {});
+              })
+            }
+        });
 
     if (game.gameOver) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Game finished!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                game.gameResart();
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('Play again?'),
-            ),
-          ],
-        ),
-      );
+      _lineController!.reset();
+      _lineController!.forward().then(
+            (_) => {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Game finished!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        game.gameResart();
+                        Navigator.of(ctx).pop();
+                      },
+                      child: const Text('Play again?'),
+                    ),
+                  ],
+                ),
+              )
+            },
+          );
     }
   }
 
@@ -90,12 +116,12 @@ class _GameScreenState extends State<GameScreen>
                   gradient: LinearGradient(
                     colors: (game.player == Player.Player1)
                         ? [
-                            Colors.red.withOpacity(0.3),
-                            Colors.blue.withOpacity(0.8),
+                            Colors.white.withOpacity(0.3),
+                            Colors.blue.withOpacity(1),
                           ]
                         : [
-                            Colors.red.withOpacity(0.8),
-                            Colors.blue.withOpacity(0.3),
+                            Colors.red.withOpacity(1),
+                            Colors.white.withOpacity(0.3),
                           ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -112,48 +138,48 @@ class _GameScreenState extends State<GameScreen>
                   ),
                   Expanded(
                     child: Center(
-                      child: CustomPaint(
-                        painter: GamePainter(game),
-                        child: GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: 9,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                          ),
-                          itemBuilder: (ctx, index) {
-                            return GestureDetector(
-                              onTap: () => _addMark(index, game),
-                              child: Container(
-                                decoration: BoxDecoration(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: CustomPaint(
+                          foregroundPainter: game.gameOver
+                              ? LinePainter(game, _progress)
+                              : null,
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: 9,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                            ),
+                            itemBuilder: (ctx, index) {
+                              return GestureDetector(
+                                onTap: () => _addMark(index, game),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(10)),
                                     border: Border.all(
-                                  color: Colors.black,
-                                )),
-                                child: Center(
-                                  // child: game.gameMarks[index] != null
-                                  //     ? RotationTransition(
-                                  //         turns: _rotateAnimation!,
-                                  //         child: GameNumber(
-                                  //             game.gameMarks[index]!))
-                                  //     : Container(
-                                  //         child: Text('Hi'),
-                                  //       ),
-                                  child: game.gameMarks[index] != null
-                                      ? game.player == Player.Player2
-                                          ? RotationTransition(
-                                              turns:
-                                                  const AlwaysStoppedAnimation(
-                                                      180 / 360),
-                                              child: GameNumber(
-                                                  game.gameMarks[index]!),
-                                            )
-                                          : GameNumber(game.gameMarks[index]!)
-                                      : Container(),
+                                      // width: 2,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: game.gameMarks[index] != null
+                                        ? RotationTransition(
+                                            turns: game.player == Player.Player2
+                                                ? _rotateAnimationFirst!
+                                                : _rotateAnimationSecond!,
+                                            child: GameNumber(
+                                                game.gameMarks[index]!),
+                                          )
+                                        : const Text(''),
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -167,61 +193,4 @@ class _GameScreenState extends State<GameScreen>
       ),
     );
   }
-}
-
-class GamePainter extends CustomPainter {
-  static double _dividedSize = 0.0;
-  GameProvider game;
-
-  GamePainter(this.game);
-
-  static double getDividedSize() => _dividedSize;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final orangePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = Colors.orange;
-
-    _dividedSize = size.width / 3.0;
-
-    if (game.gameOver) {
-      drawWinningLine(canvas, game.winningLine, orangePaint);
-    }
-  }
-
-  void drawWinningLine(Canvas canvas, List<int> winningLine, Paint paint) {
-    var x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
-
-    var firstIndex = winningLine.first;
-    var lastIndex = winningLine.last;
-
-    if (firstIndex % 3 == lastIndex % 3) {
-      // Vertical Line
-      x1 = x2 = firstIndex % 3 * _dividedSize + _dividedSize / 2;
-      y1 = strokeWidth;
-      y2 = _dividedSize * 3 - strokeWidth;
-    } else if (firstIndex ~/ 3 == lastIndex ~/ 3) {
-      // Horizonal line
-      x1 = strokeWidth;
-      x2 = _dividedSize * 3 - strokeWidth;
-      y1 = y2 = firstIndex ~/ 3 * _dividedSize + _dividedSize / 2;
-    } else {
-      if (firstIndex == 0) {
-        x1 = y1 = doubleStrokeWidth;
-        x2 = y2 = _dividedSize * 3 - strokeWidth;
-      } else {
-        x1 = _dividedSize * 3 - strokeWidth;
-        x2 = doubleStrokeWidth;
-        y1 = doubleStrokeWidth;
-        y2 = _dividedSize * 3 - strokeWidth;
-      }
-    }
-
-    canvas.drawLine(Offset(x1, y1), Offset(x2, y2), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

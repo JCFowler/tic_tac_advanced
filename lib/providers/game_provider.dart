@@ -60,16 +60,20 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
-  void addMark(int position) {
+  Future<bool> addMark(int position) async {
     if (_selectedNumber != -1 && !gameOver) {
       if (_gameMarks[position] == null ||
           _gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] =
             Mark(_selectedNumber, _player, playerColor(_player));
-        changePlayer();
-        checkForWinningLine();
+        final gameFinished = checkForWinningLine();
+        if (!gameFinished) {
+          changePlayer();
+          return true;
+        }
       }
     }
+    return false;
   }
 
   Map<int, bool> numbers(Player player) {
@@ -108,7 +112,7 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void checkForWinningLine() {
+  bool checkForWinningLine() {
     final winningLines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -135,9 +139,12 @@ class GameProvider with ChangeNotifier {
 
         if (p1Count >= 3 || p2Count >= 3) {
           _winningLine = line;
+          notifyListeners();
+          return true;
         }
       }
     }
+    return false;
   }
 
   void gameResart() {
