@@ -12,7 +12,6 @@ class GameNumber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building GameNumber');
     return Text(
       mark.number.toString(),
       style: TextStyle(

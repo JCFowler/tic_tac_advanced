@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/mark.dart';
 
-// const NUMBERS = [1, 2, 3, 4, 5, 6, 7];
-
 const Map<int, bool> baseNumbersMap = {
   1: false,
   2: false,
@@ -25,6 +23,11 @@ class GameProvider with ChangeNotifier {
     Player.Player2: Colors.red,
   };
 
+  final Map<Player, int> _scores = {
+    Player.Player1: 0,
+    Player.Player2: 0,
+  };
+
   final Map<int, bool> _player1Numbers = Map<int, bool>.from(baseNumbersMap);
   final Map<int, bool> _player2Numbers = Map<int, bool>.from(baseNumbersMap);
 
@@ -37,6 +40,10 @@ class GameProvider with ChangeNotifier {
 
   Player get player {
     return _player;
+  }
+
+  Map<Player, int> get scores {
+    return _scores;
   }
 
   /// If no player is passed, will get current player.
@@ -112,6 +119,11 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void increaseScore(Player player) {
+    _scores.update(player, (value) => value + 1);
+    notifyListeners();
+  }
+
   bool checkForWinningLine() {
     final winningLines = [
       [0, 1, 2],
@@ -139,6 +151,8 @@ class GameProvider with ChangeNotifier {
 
         if (p1Count >= 3 || p2Count >= 3) {
           _winningLine = line;
+          increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
+
           notifyListeners();
           return true;
         }

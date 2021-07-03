@@ -20,7 +20,7 @@ class NumberBoard extends StatelessWidget {
         GameBoardNumber(
           number: key,
           player: player,
-          used: value,
+          used: key == 1 ? false : value,
           width: width / 7,
         ),
       );

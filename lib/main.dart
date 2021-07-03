@@ -10,6 +10,7 @@ import 'providers/locale_provider.dart';
 import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/test.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
           routes: {
             SettingsScreen.routeName: (ctx) => const SettingsScreen(),
             GameScreen.routeName: (ctx) => const GameScreen(),
+            'test': (ctx) => const TestScreen(),
           },
         ),
       ),

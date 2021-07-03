@@ -1,8 +1,33 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../widgets/app_button.dart';
 import 'game_screen.dart';
 import 'settings_screen.dart';
+
+var colorizeTextStyle = TextStyle(
+  fontSize: 50.0,
+  fontFamily: 'Horizon',
+  foreground: Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2
+    ..color = Colors.blue
+    ..shader = const LinearGradient(
+      colors: [
+        Colors.red,
+        Colors.red,
+        Colors.purple,
+        Colors.blue,
+        Colors.blue,
+      ],
+    ).createShader(
+      Rect.fromCircle(
+        center: const Offset(150.0, 55.0),
+        radius: 200.0,
+      ),
+    ),
+);
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -34,19 +59,18 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Flexible(
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 20.0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 50.0),
-                    // transform: Matrix4.rotationZ(-15 * pi / 180)
-                    //   ..translate(10.0),
-                    child: const Text(
-                      'Tic Tac\nAdvanced',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.normal,
-                      ),
+                  child: SizedBox(
+                    height: 150,
+                    child: AnimatedTextKit(
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          'Tic Tac\nAdvanced',
+                          speed: const Duration(milliseconds: 200),
+                          textStyle: colorizeTextStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      isRepeatingAnimation: false,
                     ),
                   ),
                 ),
@@ -54,15 +78,23 @@ class HomeScreen extends StatelessWidget {
                   flex: deviceSize.width > 600 ? 2 : 1,
                   child: Column(
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(GameScreen.routeName),
-                        child: const Text('Play'),
+                      AppButton(
+                        'Play',
+                        () => Navigator.of(context).pushNamed(
+                          GameScreen.routeName,
+                        ),
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context)
-                            .pushNamed(SettingsScreen.routeName),
-                        child: const Text('Settings'),
+                      AppButton(
+                        'Settings',
+                        () => Navigator.of(context).pushNamed(
+                          SettingsScreen.routeName,
+                        ),
+                      ),
+                      AppButton(
+                        'Test',
+                        () => Navigator.of(context).pushNamed(
+                          'test',
+                        ),
                       ),
                       Text(AppLocalizations.of(context)!.helloWorld)
                     ],

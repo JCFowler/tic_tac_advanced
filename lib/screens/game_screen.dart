@@ -8,6 +8,7 @@ import '../providers/game_provider.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
+import '../widgets/score_board.dart';
 
 class GameScreen extends StatefulWidget {
   static const routeName = '/game';
@@ -140,46 +141,54 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     child: Center(
                       child: Padding(
                         padding: const EdgeInsets.all(5),
-                        child: CustomPaint(
-                          foregroundPainter: game.gameOver
-                              ? LinePainter(game, _progress)
-                              : null,
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: 9,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                            ),
-                            itemBuilder: (ctx, index) {
-                              return GestureDetector(
-                                onTap: () => _addMark(index, game),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10)),
-                                    border: Border.all(
-                                      // width: 2,
-                                      color: Colors.black54,
-                                    ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: CustomPaint(
+                                foregroundPainter: game.gameOver
+                                    ? LinePainter(game, _progress)
+                                    : null,
+                                child: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: 9,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
                                   ),
-                                  child: Center(
-                                    child: game.gameMarks[index] != null
-                                        ? RotationTransition(
-                                            turns: game.player == Player.Player2
-                                                ? _rotateAnimationFirst!
-                                                : _rotateAnimationSecond!,
-                                            child: GameNumber(
-                                                game.gameMarks[index]!),
-                                          )
-                                        : const Text(''),
-                                  ),
+                                  itemBuilder: (ctx, index) {
+                                    return GestureDetector(
+                                      onTap: () => _addMark(index, game),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(10)),
+                                          border: Border.all(
+                                            // width: 2,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: game.gameMarks[index] != null
+                                              ? RotationTransition(
+                                                  turns: game.player ==
+                                                          Player.Player2
+                                                      ? _rotateAnimationFirst!
+                                                      : _rotateAnimationSecond!,
+                                                  child: GameNumber(
+                                                      game.gameMarks[index]!),
+                                                )
+                                              : const Text(''),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                            const ScoreBoard(),
+                          ],
                         ),
                       ),
                     ),

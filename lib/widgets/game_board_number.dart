@@ -20,14 +20,18 @@ class GameBoardNumber extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
+    final selected = game.selectedNumber == number && player == game.player;
     return GestureDetector(
       onTap: () => (player == game.player && !used && !game.gameOver)
           ? game.changeSelectedNumber(number)
           : null,
       child: Container(
         width: width,
-        // Need to add color, or the padding wont take for the tap gesture.
-        color: Theme.of(context).scaffoldBackgroundColor,
+        decoration: BoxDecoration(
+          color: selected
+              ? game.playerColor(player)
+              : Theme.of(context).scaffoldBackgroundColor,
+        ),
         child: Text(
           number.toString(),
           textAlign: TextAlign.center,
@@ -35,8 +39,8 @@ class GameBoardNumber extends StatelessWidget {
             fontSize: 36,
             color: used
                 ? Colors.grey
-                : game.selectedNumber == number && player == game.player
-                    ? Colors.purple
+                : selected
+                    ? Theme.of(context).scaffoldBackgroundColor
                     : game.playerColor(player),
           ),
         ),
