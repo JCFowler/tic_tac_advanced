@@ -31,25 +31,30 @@ class AppButton extends StatelessWidget {
 
     return TextButton(
       onPressed: onTap,
-      child: Stack(
-        children: <Widget>[
-          // Stroked text as border.
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 40,
-              foreground: paint,
-            ),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: FittedBox(
+          child: Stack(
+            children: <Widget>[
+              // Stroked text as border.
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 40,
+                  foreground: paint,
+                ),
+              ),
+              // Solid text as fill.
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 40,
+                  color: Colors.blue[50],
+                ),
+              ),
+            ],
           ),
-          // Solid text as fill.
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 40,
-              color: Colors.blue[50],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
+import '../helpers/timeout.dart';
 import '../models/mark.dart';
 
 const Map<int, bool> baseNumbersMap = {
@@ -16,6 +19,10 @@ const Map<int, bool> baseNumbersMap = {
 enum Player { Player1, Player2 }
 
 class GameProvider with ChangeNotifier {
+  AnimationController? _numberController;
+  AnimationController? _lineController;
+  BuildContext? _buildContext;
+
   int _selectedNumber = -1;
   Player _player = Player.Player1;
   final Map<Player, Color> _colors = {
@@ -33,6 +40,9 @@ class GameProvider with ChangeNotifier {
 
   final Map<int, Mark> _gameMarks = {};
   List<int> _winningLine = [];
+  var _lastMovePosition = -1;
+  var _wentFirst = Player.Player1;
+  var _isAIGame = false;
 
   int get selectedNumber {
     return _selectedNumber;
@@ -44,6 +54,10 @@ class GameProvider with ChangeNotifier {
 
   Map<Player, int> get scores {
     return _scores;
+  }
+
+  bool get isAIGame {
+    return _isAIGame;
   }
 
   /// If no player is passed, will get current player.
@@ -59,6 +73,10 @@ class GameProvider with ChangeNotifier {
     return _gameMarks;
   }
 
+  int get lastMovePosition {
+    return _lastMovePosition;
+  }
+
   List<int> get winningLine {
     return _winningLine;
   }
@@ -67,20 +85,42 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
-  Future<bool> addMark(int position) async {
+  void setIsAIGame(bool isAIGame) {
+    _isAIGame = isAIGame;
+  }
+
+  void initalizeGame({
+    required AnimationController numberController,
+    required AnimationController lineController,
+    required BuildContext buildContext,
+  }) {
+    _numberController = numberController;
+    _lineController = lineController;
+    _buildContext = buildContext;
+
+    _player = Random().nextBool() ? Player.Player1 : Player.Player2;
+    _resetVariables();
+    _scores.updateAll((key, value) => value = 0);
+
+    if (isAIGame && player == Player.Player2) {
+      moveAI();
+    }
+  }
+
+  void addMark(int position) {
     if (_selectedNumber != -1 && !gameOver) {
       if (_gameMarks[position] == null ||
           _gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] =
             Mark(_selectedNumber, _player, playerColor(_player));
         final gameFinished = checkForWinningLine();
+        _lastMovePosition = position;
         if (!gameFinished) {
           changePlayer();
-          return true;
+          _runAnimation(_numberController);
         }
       }
     }
-    return false;
   }
 
   Map<int, bool> numbers(Player player) {
@@ -100,6 +140,10 @@ class GameProvider with ChangeNotifier {
     }
     _selectedNumber = -1;
     notifyListeners();
+
+    if (isAIGame) {
+      moveAI();
+    }
   }
 
   void _addUsedNumber(int num) {
@@ -154,6 +198,27 @@ class GameProvider with ChangeNotifier {
           increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
 
           notifyListeners();
+          _runAnimation(_lineController).then(
+            (_) {
+              if (_buildContext == null) return;
+
+              showDialog(
+                context: _buildContext!,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Game finished!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        gameResart();
+                        Navigator.of(ctx).pop();
+                      },
+                      child: const Text('Play again?'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
           return true;
         }
       }
@@ -162,6 +227,17 @@ class GameProvider with ChangeNotifier {
   }
 
   void gameResart() {
+    _player = _wentFirst == Player.Player1 ? Player.Player2 : Player.Player1;
+    _resetVariables();
+
+    notifyListeners();
+
+    if (isAIGame && player == Player.Player2) {
+      moveAI();
+    }
+  }
+
+  void _resetVariables() {
     _player1Numbers.forEach((key, value) {
       _player1Numbers[key] = false;
       _player2Numbers[key] = false;
@@ -169,6 +245,48 @@ class GameProvider with ChangeNotifier {
     _selectedNumber = -1;
     _winningLine = [];
     _gameMarks.clear();
-    notifyListeners();
+    _lastMovePosition = -1;
+    _wentFirst = _player;
+  }
+
+  Future<void> _runAnimation(AnimationController? controller) async {
+    if (controller != null) {
+      controller.reset();
+      return controller.forward();
+    }
+  }
+
+  // Everything below is for AI
+  void moveAI() async {
+    if (player == Player.Player2) {
+      final usableNumbers = numbers(Player.Player2)
+          .entries
+          .where((element) => element.value == false)
+          .toList();
+
+      final _random = Random();
+
+      var numberToUse =
+          usableNumbers[_random.nextInt(usableNumbers.length)].key;
+
+      var availableMoves = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+      _gameMarks.forEach((key, mark) {
+        if (mark.player == Player.Player2) {
+          availableMoves.removeWhere((element) => element == key);
+        } else if (mark.number >= numberToUse) {
+          availableMoves.removeWhere((element) => element == key);
+        }
+      });
+
+      final nextMove = availableMoves[_random.nextInt(availableMoves.length)];
+
+      setTimeout(() {
+        changeSelectedNumber(numberToUse);
+        setTimeout(() {
+          addMark(nextMove);
+        }, 800);
+      }, 300);
+    }
   }
 }

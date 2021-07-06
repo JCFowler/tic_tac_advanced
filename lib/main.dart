@@ -9,6 +9,7 @@ import 'providers/game_provider.dart';
 import 'providers/locale_provider.dart';
 import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/multiplayer_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/test.dart';
 
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
           routes: {
             SettingsScreen.routeName: (ctx) => const SettingsScreen(),
             GameScreen.routeName: (ctx) => const GameScreen(),
+            MultiplayerScreen.routeName: (ctx) => const MultiplayerScreen(),
             'test': (ctx) => const TestScreen(),
           },
         ),

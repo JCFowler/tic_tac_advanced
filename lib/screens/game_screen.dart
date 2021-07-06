@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../painters/line_painter.dart';
 import '../providers/game_provider.dart';
-import '../widgets/custom_app_bar.dart';
+import '../widgets/game_app_bar.dart';
 import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
 import '../widgets/score_board.dart';
@@ -21,8 +21,8 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   double _progress = 0.0;
-  AnimationController? _numberController;
-  AnimationController? _lineController;
+  late AnimationController _numberController;
+  late AnimationController _lineController;
   Animation<double>? _rotateAnimationFirst;
   Animation<double>? _rotateAnimationSecond;
   Animation<double>? _lineAnimation;
@@ -41,7 +41,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    _lineAnimation = Tween(begin: 0.0, end: 1.0).animate(_lineController!)
+    _lineAnimation = Tween(begin: 0.0, end: 1.0).animate(_lineController)
       ..addListener(() {
         setState(() {
           _progress = _lineAnimation!.value;
@@ -52,37 +52,35 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       begin: 0,
       end: 0.5,
     ).animate(
-      CurvedAnimation(parent: _numberController!, curve: Curves.linear),
+      CurvedAnimation(parent: _numberController, curve: Curves.linear),
     );
     _rotateAnimationSecond = Tween<double>(
       begin: 0.5,
       end: 1.0,
     ).animate(
-      CurvedAnimation(parent: _numberController!, curve: Curves.linear),
+      CurvedAnimation(parent: _numberController, curve: Curves.linear),
+    );
+
+    Provider.of<GameProvider>(context, listen: false).initalizeGame(
+      numberController: _numberController,
+      lineController: _lineController,
+      buildContext: context,
     );
   }
 
   @override
   void dispose() {
-    _lineController!.dispose();
-    _numberController!.dispose();
+    _lineController.dispose();
+    _numberController.dispose();
     super.dispose();
   }
 
   _addMark(int index, GameProvider game) {
-    game.addMark(index).then((addedMark) => {
-          if (addedMark)
-            {
-              setState(() {
-                _numberController!.reset();
-                _numberController!.forward().then((value) {});
-              })
-            }
-        });
+    game.addMark(index);
 
     if (game.gameOver) {
-      _lineController!.reset();
-      _lineController!.forward().then(
+      _lineController.reset();
+      _lineController.forward().then(
             (_) => {
               showDialog(
                 context: context,
@@ -98,7 +96,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-              )
+              ),
             },
           );
     }
@@ -107,7 +105,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(),
+      appBar: const GameAppBar(),
       body: SafeArea(
         child: Consumer<GameProvider>(
           builder: (ctx, game, _) => Stack(
@@ -164,10 +162,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                           color: Colors.white,
                                           borderRadius: const BorderRadius.all(
                                               Radius.circular(10)),
-                                          border: Border.all(
-                                            // width: 2,
-                                            color: Colors.black54,
-                                          ),
+                                          border: game.lastMovePosition == index
+                                              ? Border.all(
+                                                  color: game.player ==
+                                                          Player.Player1
+                                                      ? game.playerColor(
+                                                          Player.Player2)
+                                                      : game.playerColor(
+                                                          Player.Player1),
+                                                  width: 3,
+                                                )
+                                              : Border.all(
+                                                  color: Colors.black54,
+                                                ),
                                         ),
                                         child: Center(
                                           child: game.gameMarks[index] != null
