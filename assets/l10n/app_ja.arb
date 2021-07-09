@@ -1,4 +1,14 @@
 {
-    "helloWorld": "こんにちは！",
+    "singlePlayer": "シングルプレイ",
+    "multiplayer": "マルチプレイ",
+    "settings": "設定",
+    "random": "ランダム",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい",
+    "localPlay": "ローカルプレイ",
+    "onlinePlay": "オンラインプレイ",
+    "wins": "対",
+    
     "hello": "ヤッホ {username}"
 }

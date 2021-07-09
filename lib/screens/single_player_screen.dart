@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../providers/game_provider.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_title.dart';
 import '../widgets/background_gradient.dart';
 import '../widgets/game_app_bar.dart';
 import 'game_screen.dart';
 
-class MultiplayerScreen extends StatelessWidget {
-  static const routeName = '/multiplayer-select';
-  const MultiplayerScreen({Key? key}) : super(key: key);
+class SinglePlayerScreen extends StatelessWidget {
+  static const routeName = '/single-player-select';
+  const SinglePlayerScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +20,26 @@ class MultiplayerScreen extends StatelessWidget {
         child: Center(
           child: Column(
             children: const [
-              AppTitle('multiplayer'),
+              AppTitle('singlePlayer'),
               NavigatorAppButton(
-                'localPlay',
+                'random',
                 routeName: GameScreen.routeName,
+                aiGameType: AiType.Random,
               ),
               NavigatorAppButton(
-                'onlinePlay',
+                'easy',
                 routeName: GameScreen.routeName,
+                aiGameType: AiType.Easy,
+              ),
+              NavigatorAppButton(
+                'normal',
+                routeName: GameScreen.routeName,
+                aiGameType: AiType.Normal,
+              ),
+              NavigatorAppButton(
+                'hard',
+                routeName: GameScreen.routeName,
+                aiGameType: AiType.Hard,
               ),
             ],
           ),

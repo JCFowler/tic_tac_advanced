@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import '../widgets/background_gradient.dart';
 
 import '../models/l10n.dart';
 import '../providers/locale_provider.dart';
@@ -19,39 +20,24 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: const CustomAppBar(),
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue.withOpacity(0.5),
-                  Colors.red.withOpacity(0.5),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: const [0, 1],
-              ),
-            ),
+      body: BackgroundGradient(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 100),
+              const AppTitle('settings'),
+              ...l10nLanguages.map(
+                (locale) {
+                  return ElevatedButton(
+                    child: Text(locale.languageCode),
+                    onPressed: () => localeProvider.setLocale(locale),
+                  );
+                },
+              ).toList(),
+              Text(AppLocalizations.of(context)!.hello('John')),
+            ],
           ),
-          Center(
-            child: Column(
-              children: [
-                const SizedBox(height: 100),
-                const AppTitle('Settings'),
-                ...l10nLanguages.map(
-                  (locale) {
-                    return ElevatedButton(
-                      child: Text(locale.languageCode),
-                      onPressed: () => localeProvider.setLocale(locale),
-                    );
-                  },
-                ).toList(),
-                Text(AppLocalizations.of(context)!.hello('John')),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

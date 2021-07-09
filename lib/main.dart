@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import 'models/l10n.dart';
@@ -11,7 +12,7 @@ import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/multiplayer_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/test.dart';
+import 'screens/single_player_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,14 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  _fadeTransition(Widget widget) {
+    return PageTransition(
+      child: widget,
+      type: PageTransitionType.fade,
+      alignment: Alignment.center,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +60,33 @@ class MyApp extends StatelessWidget {
             primaryTextTheme: const TextTheme(
               headline6: TextStyle(color: Colors.red),
             ),
+            fontFamily: 'LibreBaskerville',
+            // textTheme: GoogleFonts.blackOpsOneTextTheme(),
+            // textTheme: GoogleFonts.chakraPetchTextTheme(),
+            // textTheme: GoogleFonts.playTextTheme(),
+            // textTheme: GoogleFonts.libreBaskervilleTextTheme(),
+            // textTheme: GoogleFonts.titilliumWebTextTheme(),
+            // textTheme: GoogleFonts.orbitronTextTheme(),
             scaffoldBackgroundColor: Colors.blue[50],
           ),
           home: const HomeScreen(),
-          routes: {
-            SettingsScreen.routeName: (ctx) => const SettingsScreen(),
-            GameScreen.routeName: (ctx) => const GameScreen(),
-            MultiplayerScreen.routeName: (ctx) => const MultiplayerScreen(),
-            'test': (ctx) => const TestScreen(),
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case GameScreen.routeName:
+                return PageTransition(
+                  child: const GameScreen(),
+                  type: PageTransitionType.size,
+                  alignment: Alignment.center,
+                );
+              case SinglePlayerScreen.routeName:
+                return _fadeTransition(const SinglePlayerScreen());
+              case MultiplayerScreen.routeName:
+                return _fadeTransition(const MultiplayerScreen());
+              case SettingsScreen.routeName:
+                return _fadeTransition(const SettingsScreen());
+              default:
+                return MaterialPageRoute(builder: (_) => const HomeScreen());
+            }
           },
         ),
       ),

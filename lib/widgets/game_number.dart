@@ -16,10 +16,7 @@ class GameNumber extends StatelessWidget {
       mark.number.toString(),
       style: TextStyle(
         fontSize: 50,
-        foreground: Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..color = mark.color,
+        color: mark.color,
       ),
     );
   }

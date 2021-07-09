@@ -1,5 +1,17 @@
  {
-     "helloWorld": "Hello Flutter Engage!",
+    "singlePlayer": "Single Player",
+    "multiplayer": "Multiplayer",
+    "settings": "Settings",
+    "random": "Random",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "localPlay": "Local Play",
+    "onlinePlay": "Online Play",
+    "wins": "Wins",
+
+
+
      "hello": "Hello {username}",
      "@hello": {
          "placeholders": {

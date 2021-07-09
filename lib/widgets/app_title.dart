@@ -1,6 +1,8 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 
+import '../models/l10n.dart';
+
 var colorizeTextStyle = TextStyle(
   fontSize: 50.0,
   fontFamily: 'Horizon',
@@ -47,7 +49,7 @@ class AppTitle extends StatelessWidget {
               child: AnimatedTextKit(
                 animatedTexts: [
                   TypewriterAnimatedText(
-                    text,
+                    translate(text, context),
                     speed: const Duration(milliseconds: 150),
                     textStyle: colorizeTextStyle,
                     textAlign: TextAlign.center,

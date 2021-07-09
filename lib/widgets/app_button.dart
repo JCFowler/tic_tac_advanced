@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/l10n.dart';
+import '../providers/game_provider.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -56,6 +60,33 @@ class AppButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class NavigatorAppButton extends StatelessWidget {
+  final String text;
+  final String routeName;
+  final AiType? aiGameType;
+
+  const NavigatorAppButton(
+    this.text, {
+    Key? key,
+    required this.routeName,
+    this.aiGameType,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppButton(
+      translate(text, context),
+      () {
+        if (aiGameType != null) {
+          Provider.of<GameProvider>(context, listen: false)
+              .setAiGameType(aiGameType!);
+        }
+        Navigator.of(context).pushNamed(routeName);
+      },
     );
   }
 }
