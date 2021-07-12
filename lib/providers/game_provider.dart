@@ -138,7 +138,12 @@ class GameProvider with ChangeNotifier {
         _lastMovePosition = position;
         if (!gameFinished) {
           changePlayer();
-          _runAnimation(_numberController);
+          _runAnimation(_numberController).then(
+            (value) => {
+              if (player == Player.Player2 && aiGameType != AiType.None)
+                moveAI()
+            },
+          );
         }
       }
     }
@@ -161,10 +166,6 @@ class GameProvider with ChangeNotifier {
     }
     _selectedNumber = -1;
     notifyListeners();
-
-    if (aiGameType != AiType.None) {
-      moveAI();
-    }
   }
 
   void _addUsedNumber(int num) {
