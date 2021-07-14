@@ -33,6 +33,8 @@ class AppButton extends StatelessWidget {
         ),
       );
 
+    final translatedText = translate(text, context);
+
     return TextButton(
       onPressed: onTap,
       child: Padding(
@@ -42,7 +44,7 @@ class AppButton extends StatelessWidget {
             children: <Widget>[
               // Stroked text as border.
               Text(
-                text,
+                translatedText,
                 style: TextStyle(
                   fontSize: 40,
                   foreground: paint,
@@ -50,7 +52,7 @@ class AppButton extends StatelessWidget {
               ),
               // Solid text as fill.
               Text(
-                text,
+                translatedText,
                 style: TextStyle(
                   fontSize: 40,
                   color: Colors.blue[50],
@@ -79,7 +81,7 @@ class NavigatorAppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppButton(
-      translate(text, context),
+      text,
       () {
         if (aiGameType != null) {
           Provider.of<GameProvider>(context, listen: false)

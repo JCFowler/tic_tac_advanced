@@ -9,11 +9,14 @@ import 'package:provider/provider.dart';
 import 'models/l10n.dart';
 import 'providers/game_provider.dart';
 import 'providers/locale_provider.dart';
+import 'providers/user_provider.dart';
 import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/multiplayer_screen.dart';
+import 'screens/online_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/single_player_screen.dart';
+import 'screens/test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +47,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (ctx) => GameProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => UserProvider(),
         ),
       ],
       child: Consumer<LocaleProvider>(
@@ -86,6 +92,10 @@ class MyApp extends StatelessWidget {
                 return _fadeTransition(const MultiplayerScreen());
               case SettingsScreen.routeName:
                 return _fadeTransition(const SettingsScreen());
+              case OnlineScreen.routeName:
+                return _fadeTransition(const OnlineScreen());
+              case 'test':
+                return _fadeTransition(TestScreen());
               default:
                 return MaterialPageRoute(builder: (_) => const HomeScreen());
             }

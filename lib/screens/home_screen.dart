@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../providers/game_provider.dart';
@@ -44,13 +43,16 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               ElevatedButton(
-                  onPressed: () {
-                    FirebaseFirestore.instance
-                        .collection('testing')
-                        .snapshots()
-                        .listen((event) {
-                      print(event.docs[0]['test']);
-                    });
+                  onPressed: () async {
+                    // print(await auth.doesUsernameExist('Guest1'));
+                    // FirebaseFirestore.instance
+                    //     .collection('testing')
+                    //     .snapshots()
+                    //     .listen((data) {
+                    //   data.docs.forEach((element) {
+                    //     print(element['test']);
+                    //   });
+                    // });
                   },
                   child: Text("Test")),
             ],

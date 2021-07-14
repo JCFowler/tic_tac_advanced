@@ -1,26 +1,73 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class SizeRoute extends PageRouteBuilder {
-  final Widget page;
-  SizeRoute({required this.page})
-      : super(
-          pageBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-          ) =>
-              page,
-          transitionsBuilder: (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child,
-          ) =>
-              Align(
-            child: SizeTransition(
-              sizeFactor: animation,
-              child: child,
+import '../services/auth_service.dart';
+
+class TestScreen extends StatelessWidget {
+  TestScreen({Key? key}) : super(key: key);
+
+  final AuthService _auth = AuthService();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              var result = await _auth.signInAnonymously();
+              if (result == null) {
+                print('couldnt sign in');
+              } else {
+                print('Signed in!');
+                print(result);
+              }
+            },
+            child: Text('SignIn'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _auth.signOut();
+            },
+            child: Text('Sign out'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              print(_auth.getCurrentUser());
+            },
+            child: Text('Check'),
+          ),
+          Expanded(
+            child: StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('testing').snapshots(),
+              builder: (ctx, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                if (streamSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                final docs = streamSnapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: docs.length,
+                  itemBuilder: (ctx, index) => Container(
+                    child: Text(docs[index]['test']),
+                  ),
+                );
+              },
             ),
           ),
-        );
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          FirebaseFirestore.instance.collection('testing').add(
+            {'test': 'Added by app'},
+          );
+        },
+      ),
+    );
+  }
 }
