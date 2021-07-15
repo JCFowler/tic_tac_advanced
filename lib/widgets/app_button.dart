@@ -69,13 +69,13 @@ class AppButton extends StatelessWidget {
 class NavigatorAppButton extends StatelessWidget {
   final String text;
   final String routeName;
-  final AiType? aiGameType;
+  final GameType? gameType;
 
   const NavigatorAppButton(
     this.text, {
     Key? key,
     required this.routeName,
-    this.aiGameType,
+    this.gameType,
   }) : super(key: key);
 
   @override
@@ -83,9 +83,9 @@ class NavigatorAppButton extends StatelessWidget {
     return AppButton(
       text,
       () {
-        if (aiGameType != null) {
+        if (gameType != null) {
           Provider.of<GameProvider>(context, listen: false)
-              .setAiGameType(aiGameType!);
+              .setgameType(gameType!);
         }
         Navigator.of(context).pushNamed(routeName);
       },

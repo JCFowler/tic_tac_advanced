@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
+import '../services/fire_service.dart';
 
 class UserProvider with ChangeNotifier {
   final _auth = AuthService();
+  final _fire = FireService();
 
   String _uid = '';
   String _username = '';
@@ -21,6 +23,12 @@ class UserProvider with ChangeNotifier {
 
   List<AppUser> get friends {
     return _friends;
+  }
+
+  void updateUsername(String newName) {
+    _fire.updateUsername(uid, newName);
+    _username = newName;
+    notifyListeners();
   }
 
   Future<bool> createAnonymousUser() async {

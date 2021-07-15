@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                     NavigatorAppButton(
                       'multiplayer',
                       routeName: MultiplayerScreen.routeName,
-                      aiGameType: AiType.None,
+                      gameType: GameType.Local,
                     ),
                     NavigatorAppButton(
                       'settings',
@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                     //   });
                     // });
                   },
-                  child: Text("Test")),
+                  child: const Text("Test")),
             ],
           ),
         ),

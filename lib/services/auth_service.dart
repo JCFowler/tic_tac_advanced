@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/app_user.dart';
@@ -54,12 +53,7 @@ class AuthService {
           }
         }
 
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
-          {
-            'username': username,
-            'friends': [],
-          },
-        );
+        await _fireService.createNewUser(user.uid, username);
 
         return AppUser(user.uid, username, []);
       }

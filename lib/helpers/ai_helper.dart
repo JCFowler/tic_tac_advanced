@@ -21,11 +21,11 @@ extension AiHelper on GameProvider {
   void moveAI() {
     if (player == Player.Player2) {
       Map<String, int> aiNextMove = {};
-      switch (aiGameType) {
-        case AiType.Random:
+      switch (gameType) {
+        case GameType.Random:
           aiNextMove = _aiRandomMove();
           break;
-        case AiType.Easy:
+        case GameType.Easy:
           var isAiFirstMove = true;
           gameMarks.forEach((key, value) {
             if (value.player == Player.Player2) {
@@ -36,7 +36,7 @@ extension AiHelper on GameProvider {
               ? aiNextMove = _aiRandomMove()
               : aiNextMove = _aiBestMove(1);
           break;
-        case AiType.Normal:
+        case GameType.Normal:
           var isAiFirstMove = true;
           gameMarks.forEach((key, value) {
             if (value.player == Player.Player2) {
@@ -47,7 +47,7 @@ extension AiHelper on GameProvider {
               ? aiNextMove = _aiRandomMove()
               : aiNextMove = _aiBestMove(2);
           break;
-        case AiType.Hard:
+        case GameType.Hard:
           aiNextMove = _aiBestMove(3);
           break;
         default:

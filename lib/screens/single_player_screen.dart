@@ -24,22 +24,22 @@ class SinglePlayerScreen extends StatelessWidget {
               NavigatorAppButton(
                 'random',
                 routeName: GameScreen.routeName,
-                aiGameType: AiType.Random,
+                gameType: GameType.Random,
               ),
               NavigatorAppButton(
                 'easy',
                 routeName: GameScreen.routeName,
-                aiGameType: AiType.Easy,
+                gameType: GameType.Easy,
               ),
               NavigatorAppButton(
                 'normal',
                 routeName: GameScreen.routeName,
-                aiGameType: AiType.Normal,
+                gameType: GameType.Normal,
               ),
               NavigatorAppButton(
                 'hard',
                 routeName: GameScreen.routeName,
-                aiGameType: AiType.Hard,
+                gameType: GameType.Hard,
               ),
             ],
           ),

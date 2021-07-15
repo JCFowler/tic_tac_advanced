@@ -29,7 +29,7 @@ const winningLines = [
 // ignore: constant_identifier_names
 enum Player { None, Player1, Player2 }
 // ignore: constant_identifier_names
-enum AiType { None, Random, Easy, Normal, Hard }
+enum GameType { Local, Online, Random, Easy, Normal, Hard }
 
 class GameProvider with ChangeNotifier {
   AnimationController? _numberController;
@@ -65,7 +65,7 @@ class GameProvider with ChangeNotifier {
   List<int> _winningLine = [];
   var _lastMovePosition = -1;
   var _wentFirst = Player.Player1;
-  var _aiGameType = AiType.None;
+  var _gameType = GameType.Local;
 
   int get selectedNumber {
     return _selectedNumber;
@@ -79,8 +79,8 @@ class GameProvider with ChangeNotifier {
     return _scores;
   }
 
-  AiType get aiGameType {
-    return _aiGameType;
+  GameType get gameType {
+    return _gameType;
   }
 
   /// If no player is passed, will get current player.
@@ -108,8 +108,8 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
-  void setAiGameType(AiType type) {
-    _aiGameType = type;
+  void setgameType(GameType type) {
+    _gameType = type;
   }
 
   void initalizeGame({
@@ -125,7 +125,7 @@ class GameProvider with ChangeNotifier {
     _resetVariables();
     _scores.updateAll((key, value) => value = 0);
 
-    if (aiGameType != AiType.None && player == Player.Player2) {
+    if (gameType != GameType.Local && player == Player.Player2) {
       moveAI();
     }
   }
@@ -140,7 +140,7 @@ class GameProvider with ChangeNotifier {
           changePlayer();
           _runAnimation(_numberController).then(
             (value) => {
-              if (player == Player.Player2 && aiGameType != AiType.None)
+              if (player == Player.Player2 && gameType != GameType.Local)
                 moveAI()
             },
           );
@@ -247,7 +247,7 @@ class GameProvider with ChangeNotifier {
 
     notifyListeners();
 
-    if (aiGameType != AiType.None && player == Player.Player2) {
+    if (gameType != GameType.Local && player == Player.Player2) {
       moveAI();
     }
   }
