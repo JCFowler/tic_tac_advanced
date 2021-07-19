@@ -1,4 +1,4 @@
-import '../providers/game_provider.dart';
+import 'constants.dart';
 
 class Mark {
   final int number;
@@ -8,4 +8,14 @@ class Mark {
     this.number,
     this.player,
   );
+
+  Map<String, dynamic> toJson() => {
+        'number': number,
+        'player': player.index,
+      };
+
+  @override
+  String toString() {
+    return 'number: $number, player: $player\n';
+  }
 }

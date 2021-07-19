@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/constants.dart';
 import '../models/l10n.dart';
 import '../providers/game_provider.dart';
 
@@ -85,7 +86,7 @@ class NavigatorAppButton extends StatelessWidget {
       () {
         if (gameType != null) {
           Provider.of<GameProvider>(context, listen: false)
-              .setgameType(gameType!);
+              .setGameType(gameType!);
         }
         Navigator.of(context).pushNamed(routeName);
       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/constants.dart';
 import '../providers/game_provider.dart';
 
 class GameBoardNumber extends StatelessWidget {

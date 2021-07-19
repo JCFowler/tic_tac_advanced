@@ -3,33 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../helpers/ai_helper.dart';
+import '../models/constants.dart';
 import '../models/mark.dart';
-
-const Map<int, bool> baseNumbersMap = {
-  1: false,
-  2: false,
-  3: false,
-  4: false,
-  5: false,
-  6: false,
-  7: false,
-};
-
-const winningLines = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
-
-// ignore: constant_identifier_names
-enum Player { None, Player1, Player2 }
-// ignore: constant_identifier_names
-enum GameType { Local, Online, Random, Easy, Normal, Hard }
 
 class GameProvider with ChangeNotifier {
   AnimationController? _numberController;
@@ -51,21 +26,13 @@ class GameProvider with ChangeNotifier {
   final Map<int, bool> _player1Numbers = Map<int, bool>.from(baseNumbersMap);
   final Map<int, bool> _player2Numbers = Map<int, bool>.from(baseNumbersMap);
 
-  final Map<int, Mark> _gameMarks = {
-    0: Mark(-1, Player.None),
-    1: Mark(-1, Player.None),
-    2: Mark(-1, Player.None),
-    3: Mark(-1, Player.None),
-    4: Mark(-1, Player.None),
-    5: Mark(-1, Player.None),
-    6: Mark(-1, Player.None),
-    7: Mark(-1, Player.None),
-    8: Mark(-1, Player.None),
-  };
+  final Map<int, Mark> _gameMarks = {...baseGameMarks};
   List<int> _winningLine = [];
   var _lastMovePosition = -1;
   var _wentFirst = Player.Player1;
   var _gameType = GameType.Local;
+
+  var _gameDoc = '';
 
   int get selectedNumber {
     return _selectedNumber;
@@ -81,6 +48,10 @@ class GameProvider with ChangeNotifier {
 
   GameType get gameType {
     return _gameType;
+  }
+
+  String get gameDoc {
+    return _gameDoc;
   }
 
   /// If no player is passed, will get current player.
@@ -108,8 +79,12 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
-  void setgameType(GameType type) {
+  void setGameType(GameType type) {
     _gameType = type;
+  }
+
+  void setGameDoc(String uid) {
+    _gameDoc = uid;
   }
 
   void initalizeGame({

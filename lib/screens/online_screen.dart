@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
+import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
 import '../widgets/app_button.dart';
 import '../widgets/background_gradient.dart';
 import '../widgets/game_app_bar.dart';
+import 'game_screen.dart';
 
 class OnlineScreen extends StatelessWidget {
   static const routeName = '/online';
@@ -16,7 +18,7 @@ class OnlineScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final _gameProvider = Provider.of<GameProvider>(context);
+    final _gameProvider = Provider.of<GameProvider>(context);
     final _fireService = FireService();
     final _deviceSize = MediaQuery.of(context).size;
 
@@ -83,15 +85,19 @@ class OnlineScreen extends StatelessWidget {
                             itemCount: docs.length,
                             itemBuilder: (ctx, index) => ListTile(
                               title: Text(
-                                docs[index]['username'],
+                                docs[index]['player1'],
                               ),
                               subtitle: Text(docs[index].id),
                               trailing: ElevatedButton(
                                 onPressed: () {
                                   _fireService.joinGame(
                                     docs[index].id,
+                                    userProvider.uid,
                                     userProvider.username,
                                   );
+                                  _gameProvider.setGameDoc(docs[index].id);
+                                  Navigator.of(context)
+                                      .pushNamed(GameScreen.routeName);
                                 },
                                 child: const Text('Play'),
                               ),
@@ -104,7 +110,10 @@ class OnlineScreen extends StatelessWidget {
                   AppButton(
                     'host game',
                     () {
-                      _fireService.createHostGame(userProvider.username);
+                      _fireService.createHostGame(
+                        userProvider.uid,
+                        userProvider.username,
+                      );
                     },
                   ),
                 ],
