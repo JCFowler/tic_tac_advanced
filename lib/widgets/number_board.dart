@@ -7,9 +7,11 @@ import 'game_board_number.dart';
 
 class NumberBoard extends StatelessWidget {
   final Player player;
+  final String username;
 
   const NumberBoard(
-    this.player, {
+    this.player,
+    this.username, {
     Key? key,
   }) : super(key: key);
 
@@ -31,11 +33,33 @@ class NumberBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GameProvider>(
-      builder: (ctx, game, _) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: _getNumbers(game.numbers(player), context),
-      ),
+    return Column(
+      children: [
+        if (username != '')
+          Container(
+            alignment: Alignment.center,
+            height: 25,
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.elliptical(1000, 200),
+                topRight: Radius.elliptical(1000, 200),
+              ),
+            ),
+            child: player == Player.Player1
+                ? Text(username)
+                : RotationTransition(
+                    turns: const AlwaysStoppedAnimation(180 / 360),
+                    child: Text(username),
+                  ),
+          ),
+        Consumer<GameProvider>(
+          builder: (ctx, game, _) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: _getNumbers(game.numbers(player), context),
+          ),
+        ),
+      ],
     );
   }
 }

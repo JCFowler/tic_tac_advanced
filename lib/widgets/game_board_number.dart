@@ -18,14 +18,25 @@ class GameBoardNumber extends StatelessWidget {
     required this.width,
   }) : super(key: key);
 
+  bool _canSelectNumber(GameProvider game) {
+    if (game.gameType != GameType.Local && player == Player.Player2) {
+      return false;
+    }
+
+    if (player == game.player && !used && !game.gameOver) {
+      return true;
+    }
+
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
     final selected = game.selectedNumber == number && player == game.player;
     return GestureDetector(
-      onTap: () => (player == game.player && !used && !game.gameOver)
-          ? game.changeSelectedNumber(number)
-          : null,
+      onTap: () =>
+          _canSelectNumber(game) ? game.changeSelectedNumber(number) : null,
       child: Container(
         width: width,
         decoration: BoxDecoration(

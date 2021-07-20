@@ -46,10 +46,14 @@ class MyApp extends StatelessWidget {
           create: (ctx) => LocaleProvider(),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => GameProvider(),
-        ),
-        ChangeNotifierProvider(
           create: (ctx) => UserProvider(),
+        ),
+        ChangeNotifierProxyProvider<UserProvider, GameProvider>(
+          create: (ctx) => GameProvider('', ''),
+          update: (ctx, user, previousUser) => GameProvider(
+            user.uid,
+            user.username,
+          ),
         ),
       ],
       child: Consumer<LocaleProvider>(

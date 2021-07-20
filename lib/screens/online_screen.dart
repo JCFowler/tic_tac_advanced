@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
+import '../models/constants.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
@@ -85,19 +86,39 @@ class OnlineScreen extends StatelessWidget {
                             itemCount: docs.length,
                             itemBuilder: (ctx, index) => ListTile(
                               title: Text(
-                                docs[index]['player1'],
+                                docs[index]['hostPlayer'],
                               ),
                               subtitle: Text(docs[index].id),
                               trailing: ElevatedButton(
                                 onPressed: () {
-                                  _fireService.joinGame(
+                                  showCustomLoadingDialog(context, "hi", true);
+                                  _fireService
+                                      .joinGame(
                                     docs[index].id,
                                     userProvider.uid,
                                     userProvider.username,
-                                  );
-                                  _gameProvider.setGameDoc(docs[index].id);
-                                  Navigator.of(context)
-                                      .pushNamed(GameScreen.routeName);
+                                  )
+                                      .then((value) {
+                                    _gameProvider.setGameDoc(docs[index].id);
+                                    _gameProvider.setStartingPlayer(
+                                      docs[index]['hostPlayerGoesFirst']
+                                          ? Player.Player2
+                                          : Player.Player1,
+                                    );
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context)
+                                        .pushNamed(GameScreen.routeName);
+                                  }).catchError((error) {
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                      duration: Duration(seconds: 2),
+                                      content: Text(
+                                        'Host ended game.',
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ));
+                                  });
                                 },
                                 child: const Text('Play'),
                               ),
@@ -110,10 +131,32 @@ class OnlineScreen extends StatelessWidget {
                   AppButton(
                     'host game',
                     () {
-                      _fireService.createHostGame(
-                        userProvider.uid,
-                        userProvider.username,
-                      );
+                      showCustomLoadingDialog(context, "hi2", true)
+                          .then((result) {
+                        if (result == null) {
+                          _fireService.deleteGame(userProvider.uid);
+                        }
+                      });
+                      _fireService
+                          .createHostGame(
+                              userProvider.uid, userProvider.username)
+                          .then((doc) {
+                        _gameProvider.setGameDoc(doc.id);
+                        _fireService
+                            .gameMatchStream(doc.id)
+                            .firstWhere((gameModel) =>
+                                gameModel != null &&
+                                gameModel.addedPlayer != null)
+                            .then((gameModel) {
+                          _gameProvider.setStartingPlayer(
+                            gameModel!.hostPlayerGoesFirst
+                                ? Player.Player1
+                                : Player.Player2,
+                          );
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pushNamed(GameScreen.routeName);
+                        });
+                      });
                     },
                   ),
                 ],

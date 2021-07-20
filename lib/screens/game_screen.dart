@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -65,11 +64,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       CurvedAnimation(parent: _numberController, curve: Curves.linear),
     );
 
-    Provider.of<GameProvider>(context, listen: false).initalizeGame(
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    gameProvider.initalizeGame(
       numberController: _numberController,
       lineController: _lineController,
       buildContext: context,
     );
+
+    if (gameProvider.gameType == GameType.Online) {
+      _fireService.gameMatchStream(gameProvider.gameDoc).listen((gameModel) {
+        if (gameModel != null) {
+          gameProvider.setMultiplayerData(gameModel);
+          if (gameModel.lastMove != null) {
+            gameProvider.addOnlineMark(gameModel.lastMove!);
+          }
+        }
+      });
+    }
   }
 
   @override
@@ -107,21 +118,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Widget _backgroundGradient(GameProvider game) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: (game.player == Player.Player1)
               ? [
-                  Colors.white.withOpacity(0.3),
+                  Theme.of(context).scaffoldBackgroundColor,
                   Colors.blue.withOpacity(1),
                 ]
               : [
                   Colors.red.withOpacity(1),
-                  Colors.white.withOpacity(0.3),
+                  Theme.of(context).scaffoldBackgroundColor,
                 ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          stops: const [0, 1],
+          stops: const [0.1, 0.9],
         ),
       ),
     );
@@ -158,12 +170,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
                 child: Center(
                   child: game.gameMarks[index] != null
-                      ? RotationTransition(
-                          turns: game.player == Player.Player2
-                              ? _rotateAnimationFirst!
-                              : _rotateAnimationSecond!,
-                          child: GameNumber(game.gameMarks[index]!),
-                        )
+                      ? game.gameDoc == ''
+                          ? RotationTransition(
+                              turns: game.player == Player.Player2
+                                  ? _rotateAnimationFirst!
+                                  : _rotateAnimationSecond!,
+                              child: GameNumber(game.gameMarks[index]!),
+                            )
+                          : GameNumber(game.gameMarks[index]!)
                       : const Text(''),
                 ),
               ),
@@ -186,48 +200,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const RotationTransition(
-                    turns: AlwaysStoppedAnimation(180 / 360),
-                    child: NumberBoard(Player.Player2),
+                  RotationTransition(
+                    turns: const AlwaysStoppedAnimation(180 / 360),
+                    child: NumberBoard(
+                        Player.Player2, game.getPlayerUsername(Player.Player2)),
                   ),
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.all(5),
-                      child: game.gameDoc == ''
-                          ? Row(
-                              children: [
-                                _gameBoard(game),
-                                const ScoreBoard(),
-                              ],
-                            )
-                          : StreamBuilder(
-                              stream:
-                                  _fireService.gameMatchStream(game.gameDoc),
-                              builder: (ctx,
-                                  AsyncSnapshot<DocumentSnapshot>
-                                      streamSnapshot) {
-                                if (streamSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                                final doc = streamSnapshot.data!;
-                                var gameMarks =
-                                    convertJsonToGameMarks(doc['gameMarks']);
-                                print(gameMarks);
-
-                                return Row(
-                                  children: [
-                                    _gameBoard(game),
-                                    const ScoreBoard(),
-                                  ],
-                                );
-                              },
-                            ),
+                      child: Row(
+                        children: [
+                          _gameBoard(game),
+                          const ScoreBoard(),
+                        ],
+                      ),
                     ),
                   ),
-                  const NumberBoard(Player.Player1),
+                  NumberBoard(
+                      Player.Player1, game.getPlayerUsername(Player.Player1)),
                 ],
               ),
             ],

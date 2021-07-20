@@ -3,10 +3,21 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../helpers/ai_helper.dart';
+import '../helpers/timeout.dart';
 import '../models/constants.dart';
+import '../models/game_model.dart';
+import '../models/last_move.dart';
 import '../models/mark.dart';
+import '../services/fire_service.dart';
 
 class GameProvider with ChangeNotifier {
+  final String uid;
+  final String username;
+
+  GameProvider(this.uid, this.username);
+  final _fireService = FireService();
+  GameModel? _multiplayerData;
+
   AnimationController? _numberController;
   AnimationController? _lineController;
   BuildContext? _buildContext;
@@ -29,8 +40,9 @@ class GameProvider with ChangeNotifier {
   final Map<int, Mark> _gameMarks = {...baseGameMarks};
   List<int> _winningLine = [];
   var _lastMovePosition = -1;
-  var _wentFirst = Player.Player1;
   var _gameType = GameType.Local;
+
+  var _startingPlayer = Random().nextBool() ? Player.Player1 : Player.Player2;
 
   var _gameDoc = '';
 
@@ -79,12 +91,43 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
+  GameModel? get getMultiplayerData {
+    return _multiplayerData;
+  }
+
   void setGameType(GameType type) {
     _gameType = type;
   }
 
   void setGameDoc(String uid) {
     _gameDoc = uid;
+  }
+
+  void setPlayer(Player player) {
+    _player = player;
+  }
+
+  void setStartingPlayer(Player player) {
+    _startingPlayer = player;
+  }
+
+  void setMultiplayerData(GameModel data) {
+    _multiplayerData = data;
+    notifyListeners();
+  }
+
+  String getPlayerUsername(Player player) {
+    if (_multiplayerData == null) return '';
+
+    if (player == Player.Player1) {
+      return _multiplayerData!.hostPlayer;
+    } else {
+      if (_multiplayerData!.addedPlayer != null) {
+        return _multiplayerData!.addedPlayer!;
+      } else {
+        return 'No one..';
+      }
+    }
   }
 
   void initalizeGame({
@@ -96,12 +139,31 @@ class GameProvider with ChangeNotifier {
     _lineController = lineController;
     _buildContext = buildContext;
 
-    _player = Random().nextBool() ? Player.Player1 : Player.Player2;
+    _player = _startingPlayer;
     _resetVariables();
     _scores.updateAll((key, value) => value = 0);
 
     if (gameType != GameType.Local && player == Player.Player2) {
       moveAI();
+    }
+  }
+
+  void addOnlineMark(LastMove lastMove) {
+    if (lastMove.playerUid != uid) {
+      setTimeout(() {
+        changeSelectedNumber(lastMove.number);
+        setTimeout(() {
+          _lastMovePosition = lastMove.position;
+          _gameMarks[lastMove.position] = Mark(_selectedNumber, Player.Player2);
+
+          final gameFinished = checkForWinningLine();
+
+          if (!gameFinished) {
+            changePlayer();
+            // _runAnimation(_numberController);
+          }
+        }, 800);
+      }, 300);
     }
   }
 
@@ -111,6 +173,13 @@ class GameProvider with ChangeNotifier {
         _gameMarks[position] = Mark(_selectedNumber, _player);
         final gameFinished = checkForWinningLine();
         _lastMovePosition = position;
+
+        final lastMove = LastMove(uid, position, _selectedNumber);
+
+        if (gameType == GameType.Online) {
+          _fireService.addMark(gameDoc, uid, username, gameMarks, lastMove);
+        }
+
         if (!gameFinished) {
           changePlayer();
           _runAnimation(_numberController).then(
@@ -217,7 +286,8 @@ class GameProvider with ChangeNotifier {
   }
 
   void gameResart() {
-    _player = _wentFirst == Player.Player1 ? Player.Player2 : Player.Player1;
+    _player =
+        _startingPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
     _resetVariables();
 
     notifyListeners();
@@ -236,7 +306,7 @@ class GameProvider with ChangeNotifier {
     _winningLine = [];
     _gameMarks.updateAll((key, value) => value = Mark(-1, Player.None));
     _lastMovePosition = -1;
-    _wentFirst = _player;
+    _startingPlayer = _player;
   }
 
   Future<void> _runAnimation(AnimationController? controller) async {

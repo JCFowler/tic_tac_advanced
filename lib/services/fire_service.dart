@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/app_user.dart';
 import '../models/constants.dart';
+import '../models/game_model.dart';
+import '../models/last_move.dart';
 import '../models/mark.dart';
 
 const String usersCol = 'users';
@@ -13,31 +16,12 @@ const String gamesCol = 'games';
 // const String usersCol = 'test_users';
 // const String gamesCol = 'test_games';
 
-Map<String, dynamic> convertToGameMarksToJson(Map<int, Mark> map) {
+Map<String, dynamic> _convertGameMarksToJson(Map<int, Mark> map) {
   Map<String, dynamic> result = {};
 
   map.forEach((key, value) {
-    print(value.toJson());
     result['$key'] = value.toJson();
   });
-
-  return result;
-}
-
-Map<int, Mark> convertJsonToGameMarks(String map) {
-  Map<int, Mark> result = {};
-
-  final Map<String, dynamic> data = json.decode(map);
-
-  print(data);
-
-  data.forEach((key, value) {
-    print(value);
-    result[int.parse(key)] =
-        Mark(value['number'], Player.values[value['player']]);
-  });
-
-  print(result);
 
   return result;
 }
@@ -95,29 +79,44 @@ class FireService {
   }
 
   // ###### GAMES:
-
-  void createHostGame(String uid, String username) {
-    _firestore.collection(gamesCol).add({
-      'player1uid': uid,
-      'player1': username,
+  Future<DocumentReference<Map<String, dynamic>>> createHostGame(
+      String uid, String username) {
+    return _firestore.collection(gamesCol).add({
+      'hostPlayerUid': uid,
+      'hostPlayer': username,
       'created': DateTime.now().toIso8601String(),
-      'player2uid': null,
-      'player2': null,
+      'addedPlayeruid': null,
+      'addedPlayer': null,
       'open': true,
-      'gameMarks': json.encode(convertToGameMarksToJson(baseGameMarks)),
+      'hostPlayerGoesFirst': Random().nextBool(),
+      'gameMarks': json.encode(_convertGameMarksToJson(baseGameMarks)),
     });
   }
 
-  joinGame(String docId, String uid, String username) async {
-    await _firestore.collection(gamesCol).doc(docId).update({
-      'player2': username,
-      'player2uid': uid,
+  Future<void> joinGame(String docId, String uid, String username) {
+    return _firestore.collection(gamesCol).doc(docId).update({
+      'addedPlayer': username,
+      'addedPlayeruid': uid,
       'open': false,
     });
   }
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> gameMatchStream(String docId) {
-    return _firestore.collection(gamesCol).doc(docId).snapshots();
+  Future<void> deleteGame(String uid) async {
+    var doc = await _firestore
+        .collection(gamesCol)
+        .where('hostPlayerUid', isEqualTo: uid)
+        .limit(1)
+        .get();
+
+    await doc.docs.first.reference.delete();
+  }
+
+  Stream<GameModel?> gameMatchStream(String docId) {
+    return _firestore
+        .collection(gamesCol)
+        .doc(docId)
+        .snapshots()
+        .map((event) => GameModel.docToObject(event.data()));
   }
 
   addMark(
@@ -125,12 +124,11 @@ class FireService {
     String uid,
     String username,
     Map<int, Mark> gameMarks,
-    int newMarkPos,
+    LastMove thisMove,
   ) {
     _firestore.collection(gamesCol).doc(docId).update({
-      'gameMarks': json.encode(convertToGameMarksToJson(gameMarks)),
-      'last': uid,
-      'open': false,
+      'gameMarks': json.encode(_convertGameMarksToJson(gameMarks)),
+      'lastMove': json.encode(thisMove),
     });
   }
 }
