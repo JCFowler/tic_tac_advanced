@@ -15,17 +15,51 @@ class NumberBoard extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  List<Widget> _getNumbers(Map<int, bool> numbers, BuildContext context) {
+  bool _canSelectNumber(GameProvider game, bool used) {
+    if (game.gameType != GameType.Local && player == Player.Player2) {
+      return false;
+    }
+
+    if (player == game.player && !used && !game.gameOver) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Widget _numberWidget(int key, bool value, double width) {
+    return GameBoardNumber(
+      number: key,
+      player: player,
+      used: key == 1 ? false : value,
+      width: width / 7,
+    );
+  }
+
+  List<Widget> _getNumbers(
+      Map<int, bool> numbers, BuildContext context, GameProvider game) {
     double width = MediaQuery.of(context).size.width;
     List<Widget> list = [];
     numbers.forEach((key, value) {
       list.add(
-        GameBoardNumber(
-          number: key,
-          player: player,
-          used: key == 1 ? false : value,
-          width: width / 7,
-        ),
+        _canSelectNumber(game, key == 1 ? false : value)
+            ? Draggable<int>(
+                data: key,
+                maxSimultaneousDrags: 1,
+                onDragStarted: () => game.changeSelectedNumber(key),
+                onDraggableCanceled: (_, __) => game.changeSelectedNumber(-1),
+                ignoringFeedbackSemantics: false,
+                child: _numberWidget(key, value, width),
+                feedback: Material(
+                  child: player == Player.Player1
+                      ? _numberWidget(key, value, width)
+                      : RotationTransition(
+                          turns: const AlwaysStoppedAnimation(180 / 360),
+                          child: _numberWidget(key, value, width)),
+                ),
+                childWhenDragging: _numberWidget(key, value, width),
+              )
+            : _numberWidget(key, value, width),
       );
     });
     return list;
@@ -56,7 +90,7 @@ class NumberBoard extends StatelessWidget {
         Consumer<GameProvider>(
           builder: (ctx, game, _) => Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _getNumbers(game.numbers(player), context),
+            children: _getNumbers(game.numbers(player), context, game),
           ),
         ),
       ],

@@ -36,6 +36,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   var _userId = '';
   StreamSubscription? _gameStream;
   var _showingDialog = false;
+  var hover = -1;
 
   Future<bool> _onWillPop() async {
     return (await showDialog(
@@ -196,6 +197,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
+  BoxBorder changeBorder(GameProvider game, int index) {
+    if (hover == index) {
+      return Border.all(
+        color: game.player == Player.Player1
+            ? game.playerColor(Player.Player1)
+            : game.playerColor(Player.Player2),
+        width: 3,
+      );
+    } else if (game.lastMovePosition == index) {
+      return Border.all(
+        color: game.player == Player.Player1
+            ? game.playerColor(Player.Player2)
+            : game.playerColor(Player.Player1),
+        width: 3,
+      );
+    } else {
+      return Border.all(
+        color: Colors.black54,
+      );
+    }
+  }
+
   Widget _gameBoard(GameProvider game) {
     return Expanded(
       child: CustomPaint(
@@ -210,33 +233,52 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           itemBuilder: (ctx, index) {
             return GestureDetector(
               onTap: () => _addMark(index, game),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  border: game.lastMovePosition == index
-                      ? Border.all(
-                          color: game.player == Player.Player1
-                              ? game.playerColor(Player.Player2)
-                              : game.playerColor(Player.Player1),
-                          width: 3,
-                        )
-                      : Border.all(
-                          color: Colors.black54,
-                        ),
-                ),
-                child: Center(
-                  child: game.gameMarks[index] != null
-                      ? game.gameDoc == ''
-                          ? RotationTransition(
-                              turns: game.player == Player.Player2
-                                  ? _rotateAnimationFirst!
-                                  : _rotateAnimationSecond!,
-                              child: GameNumber(game.gameMarks[index]!),
-                            )
-                          : GameNumber(game.gameMarks[index]!)
-                      : const Text(''),
-                ),
+              child: DragTarget<int>(
+                builder: (
+                  BuildContext context,
+                  List<dynamic> accepted,
+                  List<dynamic> rejected,
+                ) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      border: changeBorder(game, index),
+                    ),
+                    child: Center(
+                      child: game.gameMarks[index] != null
+                          ? game.gameDoc == ''
+                              ? RotationTransition(
+                                  turns: game.player == Player.Player2
+                                      ? _rotateAnimationFirst!
+                                      : _rotateAnimationSecond!,
+                                  child: GameNumber(game.gameMarks[index]!),
+                                )
+                              : GameNumber(game.gameMarks[index]!)
+                          : const Text(''),
+                    ),
+                  );
+                },
+                onAccept: (int data) {
+                  _addMark(index, game);
+                  setState(() {
+                    hover = -1;
+                  });
+                },
+                onLeave: (int? data) {
+                  setState(() {
+                    hover = -1;
+                  });
+                },
+                onWillAccept: (int? data) {
+                  if (game.gameMarks[index] == null ||
+                      data! > game.gameMarks[index]!.number) {
+                    setState(() {
+                      hover = index;
+                    });
+                  }
+                  return true;
+                },
               ),
             );
           },
