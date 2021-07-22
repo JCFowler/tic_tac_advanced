@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
 import '../models/constants.dart';
+import '../models/game_model.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
@@ -69,39 +69,39 @@ class OnlineScreen extends StatelessWidget {
                     ),
                     height: _deviceSize.height * 0.3,
                     child: StreamBuilder(
-                      stream: _fireService.openGamesStream(),
+                      stream: _fireService.openGamesStream(userProvider.uid),
                       builder:
-                          (ctx, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                          (ctx, AsyncSnapshot<List<GameModel>> streamSnapshot) {
                         if (streamSnapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
-                        final docs = streamSnapshot.data!.docs;
+                        final games = streamSnapshot.data!;
                         return MediaQuery.removePadding(
                           context: context,
                           removeTop: true,
                           child: ListView.builder(
-                            itemCount: docs.length,
+                            itemCount: games.length,
                             itemBuilder: (ctx, index) => ListTile(
                               title: Text(
-                                docs[index]['hostPlayer'],
+                                games[index].hostPlayer,
                               ),
-                              subtitle: Text(docs[index].id),
+                              subtitle: Text(games[index].id),
                               trailing: ElevatedButton(
                                 onPressed: () {
-                                  showCustomLoadingDialog(context, "hi", true);
+                                  showCustomLoadingDialog(context, "hi");
                                   _fireService
                                       .joinGame(
-                                    docs[index].id,
+                                    games[index].id,
                                     userProvider.uid,
                                     userProvider.username,
                                   )
                                       .then((value) {
-                                    _gameProvider.setGameDoc(docs[index].id);
+                                    _gameProvider.setGameDoc(games[index].id);
                                     _gameProvider.setStartingPlayer(
-                                      docs[index]['hostPlayerGoesFirst']
+                                      games[index].hostPlayerGoesFirst
                                           ? Player.Player2
                                           : Player.Player1,
                                     );
@@ -131,9 +131,8 @@ class OnlineScreen extends StatelessWidget {
                   AppButton(
                     'host game',
                     () {
-                      showCustomLoadingDialog(context, "hi2", true)
-                          .then((result) {
-                        if (result == null) {
+                      showCustomLoadingDialog(context, "hi2").then((result) {
+                        if (result == 'cancel') {
                           _fireService.deleteGame(userProvider.uid);
                         }
                       });

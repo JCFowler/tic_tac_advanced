@@ -56,10 +56,9 @@ Future<dynamic> showCustomDialog(BuildContext context) async {
   );
 }
 
-Future<dynamic> showCustomLoadingDialog(
-    BuildContext context, String title, bool show) async {
-  if (!show) return;
-  await showDialog(
+Future<dynamic> showCustomLoadingDialog(BuildContext context, String title) {
+  return showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (dialogContext) => Dialog(
       shape: RoundedRectangleBorder(
@@ -95,7 +94,7 @@ Future<dynamic> showCustomLoadingDialog(
                 padding: const EdgeInsets.only(top: 10),
                 child: TextButton(
                   onPressed: () {
-                    Navigator.pop(dialogContext, null);
+                    Navigator.pop(dialogContext, 'cancel');
                   },
                   style: TextButton.styleFrom(
                     minimumSize: const Size(

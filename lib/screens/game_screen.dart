@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/custom_dialog.dart';
 import '../models/constants.dart';
 import '../painters/line_painter.dart';
 import '../providers/game_provider.dart';
+import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
 import '../widgets/game_app_bar.dart';
 import '../widgets/game_number.dart';
@@ -29,6 +32,37 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Animation<double>? _rotateAnimationSecond;
   Animation<double>? _lineAnimation;
   final _fireService = FireService();
+  var _docId = '';
+  var _userId = '';
+  StreamSubscription? _gameStream;
+  var _showingDialog = false;
+
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Are you sure?'),
+            content: const Text('Do you want to quit the game?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (_docId != '') {
+                    if (_gameStream != null) _gameStream!.cancel();
+                    _fireService.leaveGame(_docId, _userId);
+                  }
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
 
   @override
   void initState() {
@@ -65,6 +99,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     gameProvider.initalizeGame(
       numberController: _numberController,
       lineController: _lineController,
@@ -72,11 +107,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     if (gameProvider.gameType == GameType.Online) {
-      _fireService.gameMatchStream(gameProvider.gameDoc).listen((gameModel) {
+      _userId = userProvider.uid;
+      _gameStream = _fireService
+          .gameMatchStream(gameProvider.gameDoc)
+          .listen((gameModel) {
+        print('lisening.. ${gameModel!.hostPlayer}');
+        _docId = gameProvider.gameDoc;
+
         if (gameModel != null) {
           gameProvider.setMultiplayerData(gameModel);
-          if (gameModel.lastMove != null) {
-            gameProvider.addOnlineMark(gameModel.lastMove!);
+          if (gameModel.addedPlayer == null) {
+            showCustomLoadingDialog(context, "hi2").then((result) {
+              if (result == 'cancel') {
+                _fireService.deleteGame(_userId);
+                Navigator.of(context).pop();
+              }
+            });
+            _showingDialog = true;
+            gameProvider.gameResart(
+                hostPlayerGoesFirst: gameModel.hostPlayerGoesFirst);
+          } else {
+            if (_showingDialog) {
+              _showingDialog = false;
+              Navigator.of(context).pop();
+            }
+            if (gameModel.lastMove != null) {
+              gameProvider.addOnlineMark(gameModel.lastMove!);
+            }
           }
         }
       });
@@ -190,37 +247,40 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const GameAppBar(),
-      body: SafeArea(
-        child: Consumer<GameProvider>(
-          builder: (ctx, game, _) => Stack(
-            children: [
-              _backgroundGradient(game),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  RotationTransition(
-                    turns: const AlwaysStoppedAnimation(180 / 360),
-                    child: NumberBoard(
-                        Player.Player2, game.getPlayerUsername(Player.Player2)),
-                  ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Row(
-                        children: [
-                          _gameBoard(game),
-                          const ScoreBoard(),
-                        ],
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: const GameAppBar(),
+        body: SafeArea(
+          child: Consumer<GameProvider>(
+            builder: (ctx, game, _) => Stack(
+              children: [
+                _backgroundGradient(game),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    RotationTransition(
+                      turns: const AlwaysStoppedAnimation(180 / 360),
+                      child: NumberBoard(Player.Player2,
+                          game.getPlayerUsername(Player.Player2)),
+                    ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Row(
+                          children: [
+                            _gameBoard(game),
+                            const ScoreBoard(),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  NumberBoard(
-                      Player.Player1, game.getPlayerUsername(Player.Player1)),
-                ],
-              ),
-            ],
+                    NumberBoard(
+                        Player.Player1, game.getPlayerUsername(Player.Player1)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

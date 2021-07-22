@@ -70,12 +70,21 @@ class FireService {
     await _firestore.collection(usersCol).doc(uid).set({'username': newName});
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> openGamesStream() {
+  Stream<List<GameModel>> openGamesStream(String uid) {
     return _firestore
         .collection(gamesCol)
         .where('open', isEqualTo: true)
         .limit(5)
-        .snapshots();
+        .snapshots()
+        .map((event) {
+      List<GameModel> result = [];
+      for (var doc in event.docs) {
+        if (doc.data()['hostPlayerUid'] != uid) {
+          result.add(GameModel.docToObject(doc)!);
+        }
+      }
+      return result;
+    });
   }
 
   // ###### GAMES:
@@ -85,7 +94,7 @@ class FireService {
       'hostPlayerUid': uid,
       'hostPlayer': username,
       'created': DateTime.now().toIso8601String(),
-      'addedPlayeruid': null,
+      'addedPlayerUid': null,
       'addedPlayer': null,
       'open': true,
       'hostPlayerGoesFirst': Random().nextBool(),
@@ -96,9 +105,30 @@ class FireService {
   Future<void> joinGame(String docId, String uid, String username) {
     return _firestore.collection(gamesCol).doc(docId).update({
       'addedPlayer': username,
-      'addedPlayeruid': uid,
+      'addedPlayerUid': uid,
       'open': false,
     });
+  }
+
+  Future<void> leaveGame(String docId, String uid) async {
+    var doc = await _firestore.collection(gamesCol).doc(docId).get();
+
+    if (doc.data() == null) return;
+
+    Map<String, Object?> newData = {};
+
+    if (doc.data()!['hostPlayerUid'] == uid) {
+      newData['hostPlayer'] = doc.data()!['addedPlayer'];
+      newData['hostPlayerUid'] = doc.data()!['addedPlayerUid'];
+    }
+
+    newData['addedPlayer'] = null;
+    newData['addedPlayerUid'] = null;
+    newData['open'] = true;
+    newData['gameMarks'] = json.encode(_convertGameMarksToJson(baseGameMarks));
+    newData['lastMove'] = null;
+
+    return _firestore.collection(gamesCol).doc(docId).update(newData);
   }
 
   Future<void> deleteGame(String uid) async {
@@ -116,7 +146,7 @@ class FireService {
         .collection(gamesCol)
         .doc(docId)
         .snapshots()
-        .map((event) => GameModel.docToObject(event.data()));
+        .map((event) => GameModel.docToObject(event));
   }
 
   addMark(

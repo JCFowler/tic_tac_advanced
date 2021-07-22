@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'constants.dart';
 import 'last_move.dart';
 import 'mark.dart';
 
 class GameModel {
+  String id;
   String hostPlayer;
   String hostPlayerUid;
   String? addedPlayer;
@@ -16,6 +19,7 @@ class GameModel {
   bool open;
 
   GameModel(
+    this.id,
     this.hostPlayer,
     this.hostPlayerUid,
     this.addedPlayer,
@@ -34,6 +38,7 @@ class GameModel {
     });
 
     return {
+      'id': id,
       'hostPlayer': hostPlayer,
       'hostPlayerUid': hostPlayerUid,
       'addedPlayer': addedPlayer,
@@ -45,21 +50,15 @@ class GameModel {
     };
   }
 
-  static GameModel jsonToObject(String jsonData) {
-    final Map<String, dynamic> data = json.decode(jsonData);
-
-    return _convert(data);
-  }
-
-  static GameModel? docToObject(Map<String, dynamic>? data) {
-    if (data != null) {
-      return _convert(data);
+  static GameModel? docToObject(DocumentSnapshot<Map<String, dynamic>>? doc) {
+    if (doc != null && doc.data() != null) {
+      return _convert(doc.data()!, doc.id);
     }
 
     return null;
   }
 
-  static GameModel _convert(Map<String, dynamic> data) {
+  static GameModel _convert(Map<String, dynamic> data, String gameId) {
     Map<int, Mark> gameMarksMap = {};
     final Map<String, dynamic> gameMarkData = json.decode(data['gameMarks']);
 
@@ -69,6 +68,7 @@ class GameModel {
     });
 
     var result = GameModel(
+      gameId,
       data['hostPlayer'],
       data['hostPlayerUid'],
       data['addedPlayer'],

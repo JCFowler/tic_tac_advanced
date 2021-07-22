@@ -120,12 +120,16 @@ class GameProvider with ChangeNotifier {
     if (_multiplayerData == null) return '';
 
     if (player == Player.Player1) {
-      return _multiplayerData!.hostPlayer;
+      return username;
     } else {
-      if (_multiplayerData!.addedPlayer != null) {
-        return _multiplayerData!.addedPlayer!;
+      if (_multiplayerData!.hostPlayerUid == uid) {
+        if (_multiplayerData!.addedPlayer != null) {
+          return _multiplayerData!.addedPlayer!;
+        } else {
+          return 'No one..';
+        }
       } else {
-        return 'No one..';
+        return _multiplayerData!.hostPlayer;
       }
     }
   }
@@ -285,9 +289,13 @@ class GameProvider with ChangeNotifier {
     );
   }
 
-  void gameResart() {
-    _player =
-        _startingPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
+  void gameResart({bool? hostPlayerGoesFirst}) {
+    if (hostPlayerGoesFirst != null) {
+      _player = hostPlayerGoesFirst ? Player.Player1 : Player.Player2;
+    } else {
+      _player =
+          _startingPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
+    }
     _resetVariables();
 
     notifyListeners();
