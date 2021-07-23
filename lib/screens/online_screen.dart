@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tic_tac_advanced/helpers/radiant_gradient_mask.dart';
 
 import '../helpers/custom_dialog.dart';
 import '../models/constants.dart';
@@ -33,30 +34,47 @@ class OnlineScreen extends StatelessWidget {
             child: Consumer<UserProvider>(
               builder: (ctx, userProvider, _) => Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            userProvider.username,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: Colors.black,
+                  GestureDetector(
+                    onTapUp: (_) async {
+                      final newUsername = await showCustomDialog(context);
+                      if (newUsername != null) {
+                        userProvider.updateUsername(newUsername);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Stack(
+                          alignment: AlignmentDirectional.topStart,
+                          clipBehavior: Clip.none,
+                          children: [
+                            Text(
+                              userProvider.username,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              top: -10,
+                              left: -15,
+                              child: RadiantGradientMask(
+                                colors: const [
+                                  Color(0xfff5f7fa),
+                                  Color(0xffb8c6db),
+                                  Color(0xfff5f7fa),
+                                ],
+                                child: Icon(
+                                  Icons.settings,
+                                  size: 25,
+                                  color: Colors.blue[50],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      IconButton(
-                        onPressed: () async {
-                          final newUsername = await showCustomDialog(context);
-                          if (newUsername != null) {
-                            userProvider.updateUsername(newUsername);
-                          }
-                        },
-                        icon: const Icon(Icons.edit),
-                      ),
-                    ],
+                    ),
                   ),
                   const Divider(),
                   Container(
@@ -91,7 +109,7 @@ class OnlineScreen extends StatelessWidget {
                               subtitle: Text(games[index].id),
                               trailing: ElevatedButton(
                                 onPressed: () {
-                                  showCustomLoadingDialog(context, "hi");
+                                  showLoadingDialog(context, 'Joining game...');
                                   _fireService
                                       .joinGame(
                                     games[index].id,
@@ -131,7 +149,8 @@ class OnlineScreen extends StatelessWidget {
                   AppButton(
                     'host game',
                     () {
-                      showCustomLoadingDialog(context, "hi2").then((result) {
+                      showLoadingDialog(context, 'Waiting for second player...')
+                          .then((result) {
                         if (result == 'cancel') {
                           _fireService.deleteGame(userProvider.uid);
                         }

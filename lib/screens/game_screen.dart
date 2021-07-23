@@ -39,30 +39,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   var hover = -1;
 
   Future<bool> _onWillPop() async {
-    return (await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Are you sure?'),
-            content: const Text('Do you want to quit the game?'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (_docId != '') {
-                    if (_gameStream != null) _gameStream!.cancel();
-                    _fireService.leaveGame(_docId, _userId);
-                  }
-                  Navigator.of(context).pop(true);
-                },
-                child: const Text('Yes'),
-              ),
-            ],
-          ),
-        )) ??
-        false;
+    var result = await showAlertDialog(
+      context,
+      'Exit Game',
+      content: 'Are you sure you want to quit the game?',
+    );
+
+    if (result) {
+      if (_docId != '') {
+        if (_gameStream != null) _gameStream!.cancel();
+        _fireService.leaveGame(_docId, _userId);
+      }
+    }
+
+    return result;
   }
 
   @override
@@ -112,13 +102,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _gameStream = _fireService
           .gameMatchStream(gameProvider.gameDoc)
           .listen((gameModel) {
-        print('lisening.. ${gameModel!.hostPlayer}');
         _docId = gameProvider.gameDoc;
 
         if (gameModel != null) {
           gameProvider.setMultiplayerData(gameModel);
           if (gameModel.addedPlayer == null) {
-            showCustomLoadingDialog(context, "hi2").then((result) {
+            showLoadingDialog(context, 'Waiting for new player...')
+                .then((result) {
               if (result == 'cancel') {
                 _fireService.deleteGame(_userId);
                 Navigator.of(context).pop();
