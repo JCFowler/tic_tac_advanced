@@ -71,10 +71,15 @@ class FireService {
   }
 
   Stream<List<GameModel>> openGamesStream(String uid) {
+    var date =
+        DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String();
+
     return _firestore
         .collection(gamesCol)
         .where('open', isEqualTo: true)
-        .limit(5)
+        .where('created', isGreaterThan: date)
+        .orderBy('created', descending: true)
+        .limit(10)
         .snapshots()
         .map((event) {
       List<GameModel> result = [];
