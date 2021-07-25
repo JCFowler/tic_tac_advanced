@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../services/fire_service.dart';
+
 Future<T?> _basicDialog<T extends Object?>(
   BuildContext context, {
   required Widget child,
+  bool? barrierDismissible,
   usePadding = true,
 }) {
   return showGeneralDialog(
     transitionDuration: const Duration(milliseconds: 200),
-    barrierDismissible: false,
     context: context,
+    barrierDismissible: barrierDismissible ?? false,
+    barrierLabel: barrierDismissible != null ? 'Dismissable' : null,
     pageBuilder: (context, animation1, animation2) {
       return Container();
     },
@@ -49,6 +53,7 @@ Future<T?> _basicDialog<T extends Object?>(
 Widget _bottomSubmitButton({
   required String text,
   required Function onPressed,
+  bool loading = false,
   Color? backgroundColor,
   Color? textColor,
 }) {
@@ -68,21 +73,36 @@ Widget _bottomSubmitButton({
       ),
       primary: backgroundColor ?? backgroundColor,
     ),
-    child: Text(
-      text,
-      style: TextStyle(
-        fontSize: 18,
-        color: textColor ?? textColor,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
+    child: loading
+        ? const FittedBox(
+            child: SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          )
+        : Text(
+            text,
+            style: TextStyle(
+              fontSize: 18,
+              color: textColor ?? textColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
   );
 }
 
-Future<dynamic> showCustomDialog(BuildContext context) async {
+Future<dynamic> showCustomDialog(
+  BuildContext context, {
+  FireService? fireService,
+}) async {
   final _form = GlobalKey<FormState>();
 
   String? enteredText;
+  bool duplicate = false;
+  bool loading = false;
 
   return _basicDialog(
     context,
@@ -134,27 +154,47 @@ Future<dynamic> showCustomDialog(BuildContext context) async {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Form(
             key: _form,
-            child: TextFormField(
-                onSaved: (value) => enteredText = value,
-                decoration: const InputDecoration(labelText: 'Username'),
-                validator: (value) {
-                  if (value != null && value.length > 3) {
+            child: SizedBox(
+              height: 80,
+              child: TextFormField(
+                  onSaved: (value) => enteredText = value,
+                  decoration: const InputDecoration(labelText: 'Username'),
+                  validator: (value) {
+                    if (value == null || value.length <= 3) {
+                      return 'Username has to be 4 or more characters.';
+                    }
+                    if (duplicate) {
+                      return 'Username is taken.';
+                    }
                     return null;
-                  } else {
-                    return 'Username has to be 4 or more characters.';
-                  }
-                }),
+                  }),
+            ),
           ),
         ),
-        _bottomSubmitButton(
-          text: 'Finish',
-          onPressed: () {
-            if (_form.currentState!.validate()) {
-              _form.currentState!.save();
-              Navigator.pop(context, enteredText);
-            }
-          },
-        ),
+        StatefulBuilder(builder: (context, setState) {
+          return _bottomSubmitButton(
+            text: 'Finish',
+            loading: loading,
+            onPressed: () async {
+              duplicate = false;
+              if (_form.currentState!.validate()) {
+                _form.currentState!.save();
+                setState(() {
+                  loading = true;
+                });
+                if (await fireService!.doesUsernameExist(enteredText!)) {
+                  duplicate = true;
+                  _form.currentState!.validate();
+                  setState(() {
+                    loading = false;
+                  });
+                } else {
+                  Navigator.pop(context, enteredText);
+                }
+              }
+            },
+          );
+        }),
       ],
     ),
   );
@@ -272,6 +312,57 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
           backgroundColor: Theme.of(context).errorColor,
         ),
       ],
+    ),
+  );
+}
+
+showFriendsDialog(BuildContext context, bool friendsOnly) {
+  return _basicDialog(
+    context,
+    barrierDismissible: true,
+    child: DefaultTabController(
+      length: friendsOnly ? 1 : 2, // length of tabs
+      initialIndex: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TabBar(
+            labelStyle: const TextStyle(fontSize: 20),
+            labelColor: Theme.of(context).primaryColor,
+            unselectedLabelColor: Colors.black,
+            tabs: [
+              const FittedBox(child: Tab(text: 'Friends')),
+              if (!friendsOnly)
+                const FittedBox(child: Tab(text: 'Invitations')),
+            ],
+          ),
+          Container(
+            height: 400, //height of TabBarView
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Colors.grey, width: 0.5),
+              ),
+            ),
+            child: TabBarView(
+              children: [
+                const Center(
+                  child: Text(
+                    'Display Tab 1',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (!friendsOnly)
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () => showCustomDialog(context),
+                      child: const Text('Invite'),
+                    ),
+                  ),
+              ],
+            ),
+          )
+        ],
+      ),
     ),
   );
 }

@@ -41,7 +41,7 @@ class FireService {
   Future<bool> doesUsernameExist(String username) async {
     final result = await _firestore
         .collection(usersCol)
-        .where('name', isEqualTo: username)
+        .where('username', isEqualTo: username)
         .limit(1)
         .get();
 
