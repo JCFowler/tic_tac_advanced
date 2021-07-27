@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
+import 'timeout.dart';
 
 Future<T?> _basicDialog<T extends Object?>(
   BuildContext context, {
   required Widget child,
   bool? barrierDismissible,
+  EdgeInsets outSidePadding = const EdgeInsets.symmetric(
+    horizontal: 40.0,
+    vertical: 24.0,
+  ),
   usePadding = true,
 }) {
   return showGeneralDialog(
@@ -23,6 +29,7 @@ Future<T?> _basicDialog<T extends Object?>(
         child: Opacity(
           opacity: a1.value,
           child: Dialog(
+            insetPadding: outSidePadding,
             backgroundColor:
                 Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
             shape: RoundedRectangleBorder(
@@ -94,7 +101,7 @@ Widget _bottomSubmitButton({
   );
 }
 
-Future<dynamic> showCustomDialog(
+Future<dynamic> showChangeUsernameDialog(
   BuildContext context, {
   FireService? fireService,
 }) async {
@@ -158,7 +165,12 @@ Future<dynamic> showCustomDialog(
               height: 80,
               child: TextFormField(
                   onSaved: (value) => enteredText = value,
-                  decoration: const InputDecoration(labelText: 'Username'),
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    errorMaxLines: 2,
+                  ),
+                  maxLength: 12,
+                  maxLines: 1,
                   validator: (value) {
                     if (value == null || value.length <= 3) {
                       return 'Username has to be 4 or more characters.';
@@ -316,53 +328,227 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
   );
 }
 
-showFriendsDialog(BuildContext context, bool friendsOnly) {
+showFriendsDialog(BuildContext context, FireService fireService, double height,
+    UserProvider userProvider) {
   return _basicDialog(
     context,
     barrierDismissible: true,
-    child: DefaultTabController(
-      length: friendsOnly ? 1 : 2, // length of tabs
-      initialIndex: 0,
+    outSidePadding: const EdgeInsets.all(20),
+    child: GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TabBar(
-            labelStyle: const TextStyle(fontSize: 20),
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.black,
-            tabs: [
-              const FittedBox(child: Tab(text: 'Friends')),
-              if (!friendsOnly)
-                const FittedBox(child: Tab(text: 'Invitations')),
-            ],
+          Text(
+            'Friends',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).primaryColor,
+            ),
           ),
+          const SizedBox(height: 5),
           Container(
-            height: 400, //height of TabBarView
-            decoration: const BoxDecoration(
+            height: height,
+            decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: Colors.grey, width: 0.5),
+                top: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 1.5,
+                ),
               ),
             ),
-            child: TabBarView(
-              children: [
-                const Center(
-                  child: Text(
-                    'Display Tab 1',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (!friendsOnly)
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () => showCustomDialog(context),
-                      child: const Text('Invite'),
-                    ),
-                  ),
-              ],
-            ),
+            child: _friendsList(fireService, userProvider),
           )
         ],
       ),
     ),
+  );
+}
+
+Widget _friendsList(FireService fireService, UserProvider userProvider) {
+  final _form = GlobalKey<FormState>();
+
+  String? enteredText;
+  bool loading = false;
+  bool noUserFound = false;
+  bool found = false;
+
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                flex: 3,
+                child: Form(
+                  key: _form,
+                  child: SizedBox(
+                    height: 100,
+                    child: TextFormField(
+                      onSaved: (value) => enteredText = value,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        errorMaxLines: 2,
+                      ),
+                      maxLength: 12,
+                      maxLines: 1,
+                      validator: (value) {
+                        if (value == null || value.length <= 3) {
+                          return 'Username has to be at least 4 characters.';
+                        } else if (noUserFound) {
+                          return 'Couldn\'t find $value';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundColor:
+                      found ? Colors.green : Theme.of(context).primaryColor,
+                  child: IconButton(
+                    icon: loading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : found
+                            ? const Icon(
+                                Icons.check,
+                                size: 25,
+                              )
+                            : const Icon(
+                                Icons.search,
+                                size: 25,
+                              ),
+                    color: Colors.white,
+                    onPressed: () async {
+                      setState(() {
+                        noUserFound = false;
+                      });
+
+                      if (_form.currentState!.validate()) {
+                        _form.currentState!.save();
+                        setState(() {
+                          loading = true;
+                        });
+
+                        var user = await fireService.findUser(enteredText!);
+
+                        if (user == null) {
+                          setState(() {
+                            noUserFound = true;
+                          });
+
+                          _form.currentState!.validate();
+                        } else {
+                          await fireService.addFriend(user, userProvider.uid);
+                          setState(() {
+                            found = true;
+                          });
+                          setTimeout(() {
+                            setState(() {
+                              found = false;
+                            });
+                          }, 2500);
+                          _form.currentState!.reset();
+                          FocusScope.of(context).unfocus();
+                        }
+
+                        setState(() {
+                          loading = false;
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+          Expanded(
+            child: userProvider.friends.isEmpty
+                ? const Center(
+                    child: Text('No friends yet...'),
+                  )
+                : ListView.builder(
+                    itemCount: userProvider.friends.length,
+                    itemBuilder: (ctx, index) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          contentPadding:
+                              const EdgeInsets.only(left: 16, right: 4),
+                          title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              userProvider.friends[index].username,
+                              style: const TextStyle(
+                                fontSize: 22,
+                              ),
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                onPressed: () {},
+                                child: const Text(
+                                  'Invite',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              CircleAvatar(
+                                backgroundColor: Colors.red,
+                                child: Center(
+                                  child: IconButton(
+                                    color: Colors.white,
+                                    onPressed: () async {
+                                      await fireService.removeFriend(
+                                        userProvider.uid,
+                                        userProvider.friends[index],
+                                      );
+                                      setState(() {
+                                        null;
+                                      });
+                                    },
+                                    icon: const Icon(
+                                      Icons.close,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
+    },
   );
 }

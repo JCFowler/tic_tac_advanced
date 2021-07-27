@@ -14,17 +14,34 @@ import '../widgets/background_gradient.dart';
 import '../widgets/game_app_bar.dart';
 import 'game_screen.dart';
 
-class OnlineScreen extends StatelessWidget {
+class OnlineScreen extends StatefulWidget {
   static const routeName = '/online';
 
-  OnlineScreen({Key? key}) : super(key: key);
+  const OnlineScreen({Key? key}) : super(key: key);
 
+  @override
+  _OnlineScreenState createState() => _OnlineScreenState();
+}
+
+class _OnlineScreenState extends State<OnlineScreen>
+    with SingleTickerProviderStateMixin {
   final _fireService = FireService();
+
+  late final AnimationController _animation = AnimationController(
+    duration: const Duration(milliseconds: 3600),
+    vsync: this,
+  )..repeat();
+
+  @override
+  void dispose() {
+    _animation.dispose();
+    super.dispose();
+  }
 
   Widget _usernameHeader(BuildContext context, UserProvider userProvider) {
     return GestureDetector(
       onTapUp: (_) async {
-        final newUsername = await showCustomDialog(
+        final newUsername = await showChangeUsernameDialog(
           context,
           fireService: _fireService,
         );
@@ -86,12 +103,15 @@ class OnlineScreen extends StatelessWidget {
           child: games.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.sentiment_dissatisfied,
-                      size: 60,
+                  children: [
+                    RotationTransition(
+                      turns: _animation,
+                      child: const Icon(
+                        Icons.sentiment_dissatisfied,
+                        size: 60,
+                      ),
                     ),
-                    Text(
+                    const Text(
                       'No games yet',
                       style: TextStyle(
                         fontSize: 22,
@@ -147,72 +167,86 @@ class OnlineScreen extends StatelessWidget {
     );
   }
 
-  Widget _fab(BuildContext context, GameProvider gameProvider) {
-    return Consumer<UserProvider>(
-      builder: (ctx, userProvider, _) => SpeedDial(
-        label: const Text(
-          'Host game',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        overlayColor: Colors.black54,
-        overlayOpacity: 0.4,
-        childMargin: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        children: [
-          SpeedDialChild(
-            label: 'Anyone',
-            labelStyle: const TextStyle(
-              fontSize: 20,
+  Widget _bottomBtn(BuildContext context, GameProvider gameProvider,
+      String text, bool isFriends, double height) {
+    return Padding(
+      padding: const EdgeInsets.all(5),
+      child: Consumer<UserProvider>(
+        builder: (ctx, userProvider, _) => SpeedDial(
+          label: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
-            backgroundColor: Theme.of(context).primaryColor,
-            child: const Icon(Icons.people, color: Colors.white),
-            onTap: () {
-              showLoadingDialog(context, 'Waiting for second player...')
-                  .then((result) {
-                if (result == 'cancel') {
-                  _fireService.deleteGame(userProvider.uid);
+          ),
+          overlayColor: Colors.black54,
+          overlayOpacity: 0.4,
+          childMargin: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+          onPress: isFriends
+              ? () {
+                  showFriendsDialog(
+                      context, _fireService, height, userProvider);
                 }
-              });
-              _fireService
-                  .createHostGame(userProvider.uid, userProvider.username)
-                  .then(
-                (doc) {
-                  gameProvider.setGameDoc(doc.id);
-                  _fireService
-                      .gameMatchStream(doc.id)
-                      .firstWhere((gameModel) =>
-                          gameModel != null && gameModel.addedPlayer != null)
-                      .then(
-                    (gameModel) {
-                      gameProvider.setStartingPlayer(
-                        gameModel!.hostPlayerGoesFirst
-                            ? Player.Player1
-                            : Player.Player2,
+              : null,
+          children: isFriends
+              ? []
+              : [
+                  SpeedDialChild(
+                    label: 'Anyone',
+                    labelStyle: const TextStyle(
+                      fontSize: 20,
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: const Icon(Icons.people, color: Colors.white),
+                    onTap: () {
+                      showLoadingDialog(context, 'Waiting for second player...')
+                          .then((result) {
+                        if (result == 'cancel') {
+                          _fireService.deleteGame(userProvider.uid);
+                        }
+                      });
+                      _fireService
+                          .createHostGame(
+                              userProvider.uid, userProvider.username)
+                          .then(
+                        (doc) {
+                          gameProvider.setGameDoc(doc.id);
+                          _fireService
+                              .gameMatchStream(doc.id)
+                              .firstWhere((gameModel) =>
+                                  gameModel != null &&
+                                  gameModel.addedPlayer != null)
+                              .then(
+                            (gameModel) {
+                              gameProvider.setStartingPlayer(
+                                gameModel!.hostPlayerGoesFirst
+                                    ? Player.Player1
+                                    : Player.Player2,
+                              );
+                              Navigator.of(context).pop();
+                              Navigator.of(context)
+                                  .pushNamed(GameScreen.routeName);
+                            },
+                          );
+                        },
                       );
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushNamed(GameScreen.routeName);
                     },
-                  );
-                },
-              );
-            },
-          ),
-          SpeedDialChild(
-            label: 'Friend',
-            labelStyle: const TextStyle(
-              fontSize: 20,
-            ),
-            backgroundColor: Theme.of(context).primaryColor,
-            child: const Icon(Icons.person, color: Colors.white),
-            onTap: () {
-              print('Go!');
-              showFriendsDialog(context, true);
-              // openDialogBoxShrink(context);
-            },
-          ),
-        ],
+                  ),
+                  SpeedDialChild(
+                    label: 'Friend',
+                    labelStyle: const TextStyle(
+                      fontSize: 20,
+                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: const Icon(Icons.person, color: Colors.white),
+                    onTap: () {
+                      showFriendsDialog(
+                          context, _fireService, height, userProvider);
+                    },
+                  ),
+                ],
+        ),
       ),
     );
   }
@@ -262,49 +296,87 @@ class OnlineScreen extends StatelessWidget {
       body: BackgroundGradient(
         child: Padding(
           padding: EdgeInsets.only(top: _deviceSize.height * 0.08),
-          child: Consumer<UserProvider>(
-            builder: (ctx, userProvider, _) => Column(
-              children: [
-                _usernameHeader(context, userProvider),
-                const Divider(),
-                DefaultTabController(
-                  length: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TabBar(
-                        labelStyle: const TextStyle(fontSize: 20),
-                        labelColor: Theme.of(context).primaryColor,
-                        unselectedLabelColor: Colors.black,
-                        tabs: const [
-                          FittedBox(child: Tab(text: 'All games')),
-                          FittedBox(child: Tab(text: 'Friend games')),
-                        ],
-                      ),
-                      Container(
-                        height: _deviceSize.height * 0.65,
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            top: BorderSide(color: Colors.grey, width: 0.5),
+          child: SingleChildScrollView(
+            child: Consumer<UserProvider>(
+              builder: (ctx, userProvider, _) => Column(
+                children: [
+                  _usernameHeader(context, userProvider),
+                  const Divider(),
+                  DefaultTabController(
+                    length: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TabBar(
+                          labelStyle: const TextStyle(fontSize: 28),
+                          labelColor: Theme.of(context).primaryColor,
+                          unselectedLabelStyle: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
                           ),
-                        ),
-                        child: TabBarView(
-                          children: [
-                            _allTab(context, _gameProvider, userProvider),
-                            _friendTab(context, _gameProvider, userProvider),
+                          unselectedLabelColor: Colors.black,
+                          tabs: [
+                            FittedBox(
+                              child: SizedBox(
+                                height: _deviceSize.height * 0.08,
+                                child: const Tab(text: 'All games'),
+                              ),
+                            ),
+                            FittedBox(
+                              child: SizedBox(
+                                height: _deviceSize.height * 0.08,
+                                child: const Tab(text: 'Friend games'),
+                              ),
+                            ),
                           ],
                         ),
-                      )
-                    ],
+                        Container(
+                          height: _deviceSize.height * 0.65,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.grey, width: 0.5),
+                            ),
+                          ),
+                          child: TabBarView(
+                            children: [
+                              _allTab(context, _gameProvider, userProvider),
+                              _friendTab(context, _gameProvider, userProvider),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: _deviceSize.height * 0.1,
+                          child: FittedBox(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _bottomBtn(
+                                  context,
+                                  _gameProvider,
+                                  'Friends',
+                                  true,
+                                  _deviceSize.height * 0.7,
+                                ),
+                                _bottomBtn(
+                                  context,
+                                  _gameProvider,
+                                  'Host Game',
+                                  false,
+                                  _deviceSize.height * 0.7,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _fab(context, _gameProvider),
     );
   }
 }

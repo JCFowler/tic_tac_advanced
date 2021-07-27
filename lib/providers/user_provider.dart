@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../models/app_user.dart';
@@ -25,29 +24,28 @@ class UserProvider with ChangeNotifier {
     return _friends;
   }
 
+  void startUserStream(String userId) {
+    _fire.userStream(userId).listen((user) {
+      if (user != null) {
+        _uid = user.uid;
+        _username = user.username;
+        _friends = user.friends;
+        notifyListeners();
+      }
+    });
+  }
+
   void updateUsername(String newName) {
     _fire.updateUsername(uid, newName);
-    _username = newName;
-    notifyListeners();
   }
 
   Future<bool> createAnonymousUser() async {
     final user = await _auth.signInAnonymously();
     if (user != null) {
-      _uid = user.uid;
-      _username = user.username;
-      _friends = user.friends;
-
-      notifyListeners();
+      startUserStream(user.uid);
       return true;
     }
 
     return false;
-  }
-
-  setUser(User? user) {
-    if (user != null) {
-      _uid = user.uid;
-    }
   }
 }

@@ -48,26 +48,59 @@ class FireService {
     return result.docs.length == 1;
   }
 
+  Future<AppUser?> findUser(String username) async {
+    final result = await _firestore
+        .collection(usersCol)
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    if (result.docs.isEmpty) {
+      return null;
+    } else {
+      return AppUser.docToObject(result.docs[0]);
+    }
+  }
+
+  Future<void> addFriend(AppUser friend, String uid) async {
+    List<Map<String, dynamic>> newFriend = [
+      {
+        'uid': friend.uid,
+        'username': friend.username,
+      }
+    ];
+
+    await _firestore
+        .collection(usersCol)
+        .doc(uid)
+        .update({"friends": FieldValue.arrayUnion(newFriend)});
+  }
+
+  Future<void> removeFriend(String uid, AppUser friend) async {
+    await _firestore.collection(usersCol).doc(uid).update(
+      {
+        "friends": FieldValue.arrayRemove([AppUser.friendToJson(friend)])
+      },
+    );
+  }
+
+  Stream<AppUser?> userStream(String uid) {
+    return _firestore.collection(usersCol).doc(uid).snapshots().map(
+      (event) {
+        return AppUser.docToObject(event, returnFriends: true);
+      },
+    );
+  }
+
   Future<AppUser?> getUserWithUid(String uid) async {
     final result = await _firestore.collection(usersCol).doc(uid).get();
 
-    if (result.data() != null) {
-      final friends = result.data()!['friends'] != null
-          ? List<AppUser>.from(result.data()!['friends'])
-          : <AppUser>[];
-
-      return AppUser(
-        uid,
-        result.data()!['username'],
-        friends,
-      );
-    }
-
-    return null;
+    return AppUser.docToObject(result, returnFriends: true);
   }
 
   Future<void> updateUsername(String uid, String newName) async {
-    await _firestore.collection(usersCol).doc(uid).set({'username': newName});
+    await _firestore.collection(usersCol).doc(uid).update(
+      {'username': newName},
+    );
   }
 
   Stream<List<GameModel>> openGamesStream(String uid) {

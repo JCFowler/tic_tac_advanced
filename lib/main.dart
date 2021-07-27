@@ -97,7 +97,7 @@ class MyApp extends StatelessWidget {
               case SettingsScreen.routeName:
                 return _fadeTransition(const SettingsScreen());
               case OnlineScreen.routeName:
-                return _fadeTransition(OnlineScreen());
+                return _fadeTransition(const OnlineScreen());
               case 'test':
                 return _fadeTransition(TestScreen());
               default:
