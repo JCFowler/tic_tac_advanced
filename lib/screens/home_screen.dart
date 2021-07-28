@@ -42,19 +42,6 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              ElevatedButton(
-                  onPressed: () async {
-                    // print(await auth.doesUsernameExist('Guest1'));
-                    // FirebaseFirestore.instance
-                    //     .collection('testing')
-                    //     .snapshots()
-                    //     .listen((data) {
-                    //   data.docs.forEach((element) {
-                    //     print(element['test']);
-                    //   });
-                    // });
-                  },
-                  child: const Text("Test")),
             ],
           ),
         ),

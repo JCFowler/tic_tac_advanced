@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
@@ -10,7 +13,10 @@ class UserProvider with ChangeNotifier {
 
   String _uid = '';
   String _username = '';
-  List<AppUser> _friends = [];
+  late AppUser _user;
+  Invited? _createdGame;
+  final StreamController<List<AppUser>> _friendStream = BehaviorSubject();
+  final StreamController<List<Invited>> _invitedStream = BehaviorSubject();
 
   String get uid {
     return _uid;
@@ -20,8 +26,20 @@ class UserProvider with ChangeNotifier {
     return _username;
   }
 
-  List<AppUser> get friends {
-    return _friends;
+  Stream<List<AppUser>> get friendStream {
+    return _friendStream.stream;
+  }
+
+  Stream<List<Invited>> get invitedStream {
+    return _invitedStream.stream;
+  }
+
+  Invited? get createdGame {
+    return _createdGame;
+  }
+
+  AppUser get user {
+    return _user;
   }
 
   void startUserStream(String userId) {
@@ -29,14 +47,18 @@ class UserProvider with ChangeNotifier {
       if (user != null) {
         _uid = user.uid;
         _username = user.username;
-        _friends = user.friends;
+        _user = user;
+        _friendStream.add(user.friends);
+        _invitedStream.add(user.invited);
+        _createdGame = user.createdGame;
+
         notifyListeners();
       }
     });
   }
 
   void updateUsername(String newName) {
-    _fire.updateUsername(uid, newName);
+    _fire.updateUsername(user, newName);
   }
 
   Future<bool> createAnonymousUser() async {

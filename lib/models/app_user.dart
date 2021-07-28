@@ -1,21 +1,61 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class Invited {
+  String gameId;
+  String inviteeUsername;
+  DateTime created;
+
+  Invited(this.gameId, this.inviteeUsername, this.created);
+
+  static Map<String, dynamic> toJson(Invited invited) {
+    return {
+      'gameId': invited.gameId,
+      'inviteeUsername': invited.inviteeUsername,
+      'created': invited.created.toIso8601String(),
+    };
+  }
+
+  static Invited toObject(Map<String, dynamic> map) {
+    return Invited(
+      map['gameId'],
+      map['inviteeUsername'],
+      DateTime.parse(
+        map['created'],
+      ),
+    );
+  }
+}
+
 class AppUser {
   String uid;
   String username;
   List<AppUser> friends;
+  List<Invited> invited;
+  Invited? createdGame;
 
   AppUser(
     this.uid,
     this.username,
     this.friends,
-  );
+    this.invited, {
+    this.createdGame,
+  });
 
   static Map<String, dynamic> friendToJson(AppUser friend) {
     return {
       'uid': friend.uid,
       'username': friend.username,
     };
+  }
+
+  static List<Map<String, dynamic>> friendListToJson(List<AppUser> friends) {
+    List<Map<String, dynamic>> list = [];
+
+    for (var friend in friends) {
+      list.add(friendToJson(friend));
+    }
+
+    return list;
   }
 
   static AppUser? docToObject(
@@ -27,15 +67,31 @@ class AppUser {
         var data = doc.data()!;
 
         List<AppUser> frs = [];
+        List<Invited> invs = [];
         if (returnFriends) {
           if (data['friends'] != null) {
             for (var friend in data['friends']) {
-              frs.add(AppUser(friend['uid'], friend['username'], []));
+              frs.add(AppUser(friend['uid'], friend['username'], [], []));
+            }
+          }
+          if (data['invited'] != null) {
+            for (var friend in data['invited']) {
+              invs.add(Invited(
+                friend['gameId'],
+                friend['inviteeUsername'],
+                DateTime.parse(friend['created']),
+              ));
             }
           }
         }
 
-        return AppUser(doc.id, data['username'], frs);
+        AppUser user = AppUser(doc.id, data['username'], frs, invs);
+
+        if (data['createdGame'] != null) {
+          user.createdGame = Invited.toObject(data['createdGame']);
+        }
+
+        return user;
       }
     } catch (error) {
       print('Error in creating friends.. $error');

@@ -9,10 +9,6 @@ class AuthService {
   final _auth = FirebaseAuth.instance;
   final _fireService = FireService();
 
-  getCurrentUser() {
-    return _auth.currentUser;
-  }
-
   signOut() {
     return _auth.signOut();
   }
@@ -55,7 +51,7 @@ class AuthService {
 
         await _fireService.createNewUser(user.uid, username);
 
-        return AppUser(user.uid, username, []);
+        return AppUser(user.uid, username, [], []);
       }
     } catch (error) {
       return null;

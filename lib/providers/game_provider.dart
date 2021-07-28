@@ -11,8 +11,8 @@ import '../models/mark.dart';
 import '../services/fire_service.dart';
 
 class GameProvider with ChangeNotifier {
-  final String uid;
-  final String username;
+  String uid;
+  String username;
 
   GameProvider(this.uid, this.username);
   final _fireService = FireService();
@@ -99,8 +99,8 @@ class GameProvider with ChangeNotifier {
     _gameType = type;
   }
 
-  void setGameDoc(String uid) {
-    _gameDoc = uid;
+  void setGameDoc(String gameId) {
+    _gameDoc = gameId;
   }
 
   void setPlayer(Player player) {

@@ -61,26 +61,39 @@ class FireService {
     }
   }
 
-  Future<void> addFriend(AppUser friend, String uid) async {
-    List<Map<String, dynamic>> newFriend = [
-      {
-        'uid': friend.uid,
-        'username': friend.username,
-      }
-    ];
-
-    await _firestore
-        .collection(usersCol)
-        .doc(uid)
-        .update({"friends": FieldValue.arrayUnion(newFriend)});
+  Future<void> _addingFriend(AppUser friend, String userId) async {
+    await _firestore.collection(usersCol).doc(userId).update({
+      "friends": FieldValue.arrayUnion(
+        [
+          {
+            'uid': friend.uid,
+            'username': friend.username,
+          }
+        ],
+      )
+    });
   }
 
-  Future<void> removeFriend(String uid, AppUser friend) async {
-    await _firestore.collection(usersCol).doc(uid).update(
+  Future<void> addFriend(AppUser currentUser, AppUser friend) async {
+    // Current user adding friend
+    await _addingFriend(friend, currentUser.uid);
+    // Friend adding current user
+    await _addingFriend(currentUser, friend.uid);
+  }
+
+  Future<void> _removingFriend(AppUser friend, String userId) async {
+    await _firestore.collection(usersCol).doc(userId).update(
       {
         "friends": FieldValue.arrayRemove([AppUser.friendToJson(friend)])
       },
     );
+  }
+
+  Future<void> removeFriend(AppUser currentUser, AppUser friend) async {
+    // Current user removing friend
+    await _removingFriend(friend, currentUser.uid);
+    // Friend removing current user
+    await _removingFriend(currentUser, friend.uid);
   }
 
   Stream<AppUser?> userStream(String uid) {
@@ -97,10 +110,34 @@ class FireService {
     return AppUser.docToObject(result, returnFriends: true);
   }
 
-  Future<void> updateUsername(String uid, String newName) async {
-    await _firestore.collection(usersCol).doc(uid).update(
-      {'username': newName},
-    );
+  Future<void> updateUsername(AppUser user, String newName) async {
+    await _firestore.runTransaction((transaction) async {
+      var userRef = _firestore.collection(usersCol).doc(user.uid);
+
+      List<Map<String, dynamic>> updateList = [];
+
+      await Future.forEach(user.friends, (AppUser friend) async {
+        var friendRef = _firestore.collection(usersCol).doc(friend.uid);
+        await transaction.get(friendRef).then((docFriend) {
+          var fri = AppUser.docToObject(docFriend, returnFriends: true);
+          var index =
+              fri!.friends.indexWhere((element) => element.uid == user.uid);
+          if (index != -1) {
+            fri.friends[index].username = newName;
+            updateList.add({
+              'ref': friendRef,
+              'newFriends': AppUser.friendListToJson(fri.friends)
+            });
+          }
+        });
+      });
+
+      transaction.update(userRef, {'username': newName});
+
+      for (var item in updateList) {
+        transaction.update(item['ref'], {"friends": item['newFriends']});
+      }
+    });
   }
 
   Stream<List<GameModel>> openGamesStream(String uid) {
@@ -148,6 +185,82 @@ class FireService {
     });
   }
 
+  Future<String> inviteFriendGame(AppUser user, AppUser friend) async {
+    var date = DateTime.now().toIso8601String();
+
+    String gameId = '';
+
+    await _firestore.runTransaction((transaction) async {
+      var gameRef = _firestore.collection(gamesCol).doc();
+      var userRef = _firestore.collection(usersCol).doc(user.uid);
+      var friendRef = _firestore.collection(usersCol).doc(friend.uid);
+
+      transaction.set(gameRef, {
+        'hostPlayerUid': user.uid,
+        'hostPlayer': user.username,
+        'created': date,
+        'addedPlayerUid': null,
+        'addedPlayer': null,
+        'open': false,
+        'hostPlayerGoesFirst': Random().nextBool(),
+        'gameMarks': json.encode(_convertGameMarksToJson(baseGameMarks)),
+      });
+
+      gameId = gameRef.id;
+
+      transaction.update(userRef, {
+        "createdGame": {
+          'gameId': gameId,
+          'inviteeUsername': user.username,
+          'created': date,
+        }
+      });
+
+      transaction.update(friendRef, {
+        "invited": FieldValue.arrayUnion([
+          {
+            'gameId': gameId,
+            'inviteeUsername': user.username,
+            'created': date,
+          }
+        ])
+      });
+    });
+
+    return gameId;
+  }
+
+  deleteInvite(AppUser user, String friendUid) {
+    deleteGame(user.uid).then((_) async {
+      if (user.createdGame != null) {
+        await removeInvitedGame(user.createdGame!, friendUid);
+      }
+    });
+  }
+
+  removeInvitedGame(Invited game, String friendUid) async {
+    await _firestore.collection(usersCol).doc(friendUid).update({
+      "invited": FieldValue.arrayRemove(
+        [
+          Invited.toJson(
+            game,
+          )
+        ],
+      )
+    });
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> joinInvitedGame(
+      String docId, String uid, String username) async {
+    await _firestore.collection(gamesCol).doc(docId).update({
+      'addedPlayer': username,
+      'addedPlayerUid': uid,
+      'open': false,
+    });
+
+    return _firestore.collection(gamesCol).doc(docId).get();
+  }
+
   Future<void> leaveGame(String docId, String uid) async {
     var doc = await _firestore.collection(gamesCol).doc(docId).get();
 
@@ -173,10 +286,11 @@ class FireService {
     var doc = await _firestore
         .collection(gamesCol)
         .where('hostPlayerUid', isEqualTo: uid)
-        .limit(1)
         .get();
 
-    await doc.docs.first.reference.delete();
+    for (var d in doc.docs) {
+      d.reference.delete();
+    }
   }
 
   Stream<GameModel?> gameMatchStream(String docId) {

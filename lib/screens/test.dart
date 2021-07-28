@@ -32,12 +32,6 @@ class TestScreen extends StatelessWidget {
             },
             child: Text('Sign out'),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              print(_auth.getCurrentUser());
-            },
-            child: Text('Check'),
-          ),
           Expanded(
             child: StreamBuilder(
               stream:

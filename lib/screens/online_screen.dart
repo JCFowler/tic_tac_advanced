@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
 import '../helpers/radiant_gradient_mask.dart';
+import '../models/app_user.dart';
 import '../models/constants.dart';
 import '../models/game_model.dart';
 import '../providers/game_provider.dart';
@@ -167,6 +168,94 @@ class _OnlineScreenState extends State<OnlineScreen>
     );
   }
 
+  Widget _friendStream(BuildContext context, GameProvider gameProvider,
+      UserProvider userProvider) {
+    return StreamBuilder(
+      stream: userProvider.invitedStream,
+      builder: (ctx, AsyncSnapshot<List<Invited>> streamSnapshot) {
+        if (streamSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        final invited = streamSnapshot.data!;
+        return MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: invited.isEmpty
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RotationTransition(
+                      turns: _animation,
+                      child: const Icon(
+                        Icons.sentiment_dissatisfied,
+                        size: 60,
+                      ),
+                    ),
+                    const Text(
+                      'No games yet',
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                )
+              : ListView.builder(
+                  itemCount: invited.length,
+                  itemBuilder: (ctx, index) => ListTile(
+                    title: Text(
+                      invited[index].inviteeUsername,
+                    ),
+                    subtitle: Text(
+                        DateFormat('h:mm a').format(invited[index].created)),
+                    trailing: ElevatedButton(
+                      onPressed: () {
+                        showLoadingDialog(
+                          context,
+                          'Joining ${invited[index].inviteeUsername}\'s game...',
+                        );
+                        _fireService
+                            .joinInvitedGame(
+                          invited[index].gameId,
+                          userProvider.uid,
+                          userProvider.username,
+                        )
+                            .then((doc) {
+                          _fireService.removeInvitedGame(
+                            invited[index],
+                            userProvider.uid,
+                          );
+                          gameProvider.setGameDoc(invited[index].gameId);
+                          gameProvider.setStartingPlayer(
+                            doc.data()!['hostPlayerGoesFirst']
+                                ? Player.Player2
+                                : Player.Player1,
+                          );
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pushNamed(GameScreen.routeName);
+                        }).catchError((error) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            duration: Duration(seconds: 2),
+                            content: Text(
+                              'Host ended game.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ));
+                        });
+                      },
+                      child: const Text('Play'),
+                    ),
+                  ),
+                ),
+        );
+      },
+    );
+  }
+
   Widget _bottomBtn(BuildContext context, GameProvider gameProvider,
       String text, bool isFriends, double height) {
     return Padding(
@@ -185,8 +274,8 @@ class _OnlineScreenState extends State<OnlineScreen>
           childMargin: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
           onPress: isFriends
               ? () {
-                  showFriendsDialog(
-                      context, _fireService, height, userProvider);
+                  showFriendsDialog(context, _fireService, height, userProvider,
+                      gameProvider);
                 }
               : null,
           children: isFriends
@@ -242,7 +331,12 @@ class _OnlineScreenState extends State<OnlineScreen>
                     child: const Icon(Icons.person, color: Colors.white),
                     onTap: () {
                       showFriendsDialog(
-                          context, _fireService, height, userProvider);
+                        context,
+                        _fireService,
+                        height,
+                        userProvider,
+                        gameProvider,
+                      );
                     },
                   ),
                 ],
@@ -281,7 +375,7 @@ class _OnlineScreenState extends State<OnlineScreen>
           color: Colors.black54,
         ),
       ),
-      child: _gameStream(context, gameProvider, userProvider),
+      child: _friendStream(context, gameProvider, userProvider),
     );
   }
 

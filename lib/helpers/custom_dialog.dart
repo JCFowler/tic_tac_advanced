@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../models/app_user.dart';
+import '../models/constants.dart';
 import '../providers/user_provider.dart';
+import '../providers/game_provider.dart';
+import '../screens/game_screen.dart';
 import '../services/fire_service.dart';
 import 'timeout.dart';
 
@@ -329,7 +333,7 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
 }
 
 showFriendsDialog(BuildContext context, FireService fireService, double height,
-    UserProvider userProvider) {
+    UserProvider userProvider, GameProvider gameProvider) {
   return _basicDialog(
     context,
     barrierDismissible: true,
@@ -357,7 +361,7 @@ showFriendsDialog(BuildContext context, FireService fireService, double height,
                 ),
               ),
             ),
-            child: _friendsList(fireService, userProvider),
+            child: _friendsList(fireService, userProvider, gameProvider),
           )
         ],
       ),
@@ -365,7 +369,8 @@ showFriendsDialog(BuildContext context, FireService fireService, double height,
   );
 }
 
-Widget _friendsList(FireService fireService, UserProvider userProvider) {
+Widget _friendsList(FireService fireService, UserProvider userProvider,
+    GameProvider gameProvider) {
   final _form = GlobalKey<FormState>();
 
   String? enteredText;
@@ -390,7 +395,9 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                     child: TextFormField(
                       onSaved: (value) => enteredText = value,
                       decoration: const InputDecoration(
-                        labelText: 'Username',
+                        hintText: 'Friend\'s username',
+                        hintStyle: TextStyle(fontSize: 12),
+                        labelText: 'Add new friend',
                         errorMaxLines: 2,
                       ),
                       maxLength: 12,
@@ -434,6 +441,8 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                               ),
                     color: Colors.white,
                     onPressed: () async {
+                      if (loading) return;
+
                       setState(() {
                         noUserFound = false;
                       });
@@ -444,16 +453,17 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                           loading = true;
                         });
 
-                        var user = await fireService.findUser(enteredText!);
+                        var friend = await fireService.findUser(enteredText!);
 
-                        if (user == null) {
+                        if (friend == null) {
                           setState(() {
                             noUserFound = true;
                           });
 
                           _form.currentState!.validate();
                         } else {
-                          await fireService.addFriend(user, userProvider.uid);
+                          await fireService.addFriend(
+                              userProvider.user, friend);
                           setState(() {
                             found = true;
                           });
@@ -478,12 +488,23 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
           ),
           const Divider(),
           Expanded(
-            child: userProvider.friends.isEmpty
-                ? const Center(
-                    child: Text('No friends yet...'),
-                  )
-                : ListView.builder(
-                    itemCount: userProvider.friends.length,
+            child: StreamBuilder(
+                stream: userProvider.friendStream,
+                builder: (ctx, AsyncSnapshot<List<AppUser>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  final friends = snapshot.data!;
+
+                  if (friends.isEmpty) {
+                    return const Center(
+                      child: Text('No friends yet...'),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: friends.length,
                     itemBuilder: (ctx, index) {
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 4),
@@ -494,7 +515,7 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              userProvider.friends[index].username,
+                              friends[index].username,
                               style: const TextStyle(
                                 fontSize: 22,
                               ),
@@ -510,7 +531,44 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                                     color: Colors.blue,
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  showLoadingDialog(
+                                    context,
+                                    'Waiting for ${friends[index].username}...',
+                                  ).then((result) {
+                                    if (result == 'cancel') {
+                                      fireService.deleteInvite(
+                                        userProvider.user,
+                                        friends[index].uid,
+                                      );
+                                    }
+                                  });
+                                  fireService
+                                      .inviteFriendGame(
+                                          userProvider.user, friends[index])
+                                      .then(
+                                    (gameId) {
+                                      gameProvider.setGameDoc(gameId);
+                                      fireService
+                                          .gameMatchStream(gameId)
+                                          .firstWhere((gameModel) =>
+                                              gameModel != null &&
+                                              gameModel.addedPlayer != null)
+                                          .then(
+                                        (gameModel) {
+                                          gameProvider.setStartingPlayer(
+                                            gameModel!.hostPlayerGoesFirst
+                                                ? Player.Player1
+                                                : Player.Player2,
+                                          );
+                                          Navigator.of(context).pop();
+                                          Navigator.of(context)
+                                              .pushNamed(GameScreen.routeName);
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
                                 child: const Text(
                                   'Invite',
                                   style: TextStyle(
@@ -526,8 +584,8 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                                     color: Colors.white,
                                     onPressed: () async {
                                       await fireService.removeFriend(
-                                        userProvider.uid,
-                                        userProvider.friends[index],
+                                        userProvider.user,
+                                        friends[index],
                                       );
                                       setState(() {
                                         null;
@@ -545,7 +603,8 @@ Widget _friendsList(FireService fireService, UserProvider userProvider) {
                         ),
                       );
                     },
-                  ),
+                  );
+                }),
           ),
         ],
       );

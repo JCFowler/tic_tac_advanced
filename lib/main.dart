@@ -50,10 +50,11 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<UserProvider, GameProvider>(
           create: (ctx) => GameProvider('', ''),
-          update: (ctx, user, previousUser) => GameProvider(
-            user.uid,
-            user.username,
-          ),
+          update: (ctx, user, game) {
+            game!.uid = user.uid;
+            game.username = user.username;
+            return game;
+          },
         ),
       ],
       child: Consumer<LocaleProvider>(
