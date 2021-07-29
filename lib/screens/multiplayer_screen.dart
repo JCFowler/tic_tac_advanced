@@ -26,23 +26,27 @@ class MultiplayerScreen extends StatelessWidget {
       appBar: const GameAppBar(),
       extendBodyBehindAppBar: true,
       body: BackgroundGradient(
-        child: Center(
-          child: Column(
-            children: [
-              const AppTitle('multiplayer'),
-              const NavigatorAppButton(
-                'localPlay',
-                routeName: GameScreen.routeName,
-              ),
-              userProvider.uid == ''
-                  ? const CircularProgressIndicator()
-                  : const NavigatorAppButton(
-                      'onlinePlay',
-                      routeName: OnlineScreen.routeName,
-                      gameType: GameType.Online,
-                    ),
-            ],
-          ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const AppTitle('multiplayer'),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const NavigatorAppButton(
+                  'localPlay',
+                  routeName: GameScreen.routeName,
+                ),
+                userProvider.uid == ''
+                    ? const CircularProgressIndicator()
+                    : const NavigatorAppButton(
+                        'onlinePlay',
+                        routeName: OnlineScreen.routeName,
+                        gameType: GameType.Online,
+                      ),
+              ],
+            ),
+          ],
         ),
       ),
     );

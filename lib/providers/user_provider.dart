@@ -13,7 +13,7 @@ class UserProvider with ChangeNotifier {
 
   String _uid = '';
   String _username = '';
-  late AppUser _user;
+  AppUser? _user;
   Invited? _createdGame;
   final StreamController<List<AppUser>> _friendStream = BehaviorSubject();
   final StreamController<List<Invited>> _invitedStream = BehaviorSubject();
@@ -38,7 +38,7 @@ class UserProvider with ChangeNotifier {
     return _createdGame;
   }
 
-  AppUser get user {
+  AppUser? get user {
     return _user;
   }
 
@@ -58,7 +58,7 @@ class UserProvider with ChangeNotifier {
   }
 
   void updateUsername(String newName) {
-    _fire.updateUsername(user, newName);
+    _fire.updateUsername(user!, newName);
   }
 
   Future<bool> createAnonymousUser() async {

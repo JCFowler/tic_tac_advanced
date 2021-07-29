@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/constants.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_title.dart';
 import '../widgets/background_gradient.dart';
@@ -29,15 +28,10 @@ class HomeScreen extends StatelessWidget {
                     NavigatorAppButton(
                       'multiplayer',
                       routeName: MultiplayerScreen.routeName,
-                      gameType: GameType.Local,
                     ),
                     NavigatorAppButton(
                       'settings',
                       routeName: SettingsScreen.routeName,
-                    ),
-                    NavigatorAppButton(
-                      'Test',
-                      routeName: 'test',
                     ),
                   ],
                 ),

@@ -16,7 +16,6 @@ import 'screens/multiplayer_screen.dart';
 import 'screens/online_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/single_player_screen.dart';
-import 'screens/test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +52,7 @@ class MyApp extends StatelessWidget {
           update: (ctx, user, game) {
             game!.uid = user.uid;
             game.username = user.username;
+            game.user = user.user;
             return game;
           },
         ),
@@ -70,6 +70,9 @@ class MyApp extends StatelessWidget {
           title: 'Tic Tac Advanced',
           theme: ThemeData(
             primarySwatch: Colors.blue,
+            accentColor: Colors.purple,
+            dialogBackgroundColor: Colors.blue.shade50.withOpacity(0.5),
+            scaffoldBackgroundColor: Colors.blue.shade50,
             primaryTextTheme: const TextTheme(
               headline6: TextStyle(color: Colors.red),
             ),
@@ -80,7 +83,6 @@ class MyApp extends StatelessWidget {
             // textTheme: GoogleFonts.libreBaskervilleTextTheme(),
             // textTheme: GoogleFonts.titilliumWebTextTheme(),
             // textTheme: GoogleFonts.orbitronTextTheme(),
-            scaffoldBackgroundColor: Colors.blue[50],
           ),
           home: const HomeScreen(),
           onGenerateRoute: (settings) {
@@ -99,8 +101,6 @@ class MyApp extends StatelessWidget {
                 return _fadeTransition(const SettingsScreen());
               case OnlineScreen.routeName:
                 return _fadeTransition(const OnlineScreen());
-              case 'test':
-                return _fadeTransition(TestScreen());
               default:
                 return MaterialPageRoute(builder: (_) => const HomeScreen());
             }

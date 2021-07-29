@@ -1,5 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+bool userWasInvited(List<Invited> invites, String username) {
+  for (var inv in invites) {
+    if (inv.inviteeUsername == username) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 class Invited {
   String gameId;
   String inviteeUsername;
@@ -32,6 +42,7 @@ class AppUser {
   List<AppUser> friends;
   List<Invited> invited;
   Invited? createdGame;
+  Invited? invitedGame;
 
   AppUser(
     this.uid,
@@ -39,6 +50,7 @@ class AppUser {
     this.friends,
     this.invited, {
     this.createdGame,
+    this.invitedGame,
   });
 
   static Map<String, dynamic> friendToJson(AppUser friend) {
@@ -69,17 +81,33 @@ class AppUser {
         List<AppUser> frs = [];
         List<Invited> invs = [];
         if (returnFriends) {
-          if (data['friends'] != null) {
-            for (var friend in data['friends']) {
-              frs.add(AppUser(friend['uid'], friend['username'], [], []));
+          if (data['invited'] != null) {
+            for (var invite in data['invited']) {
+              invs.add(Invited(
+                invite['gameId'],
+                invite['inviteeUsername'],
+                DateTime.parse(invite['created']),
+              ));
             }
           }
-          if (data['invited'] != null) {
-            for (var friend in data['invited']) {
-              invs.add(Invited(
-                friend['gameId'],
-                friend['inviteeUsername'],
-                DateTime.parse(friend['created']),
+          if (data['friends'] != null) {
+            for (var friend in data['friends']) {
+              Invited? inv;
+              if (invs.isNotEmpty) {
+                var index = invs.indexWhere(
+                  (i) => i.inviteeUsername == friend['username'],
+                );
+                if (index != -1) {
+                  inv = invs[index];
+                }
+              }
+
+              frs.add(AppUser(
+                friend['uid'],
+                friend['username'],
+                [],
+                [],
+                invitedGame: inv,
               ));
             }
           }

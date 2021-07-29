@@ -26,13 +26,13 @@ class AuthService {
 
         final _random = Random();
         var uniqueUsername = false;
-        var username = 'Guest${_random.nextInt(999999)}';
+        var username = 'Guest${_random.nextInt(99999)}';
 
         if (!await _fireService.doesUsernameExist(username)) {
           var cycle = 0; // Fail safe to make sure it doesn't keep going.
 
           while (!uniqueUsername) {
-            username = 'Guest${_random.nextInt(999999)}';
+            username = 'Guest${_random.nextInt(99999)}';
 
             final exist = await _fireService.doesUsernameExist(username);
 
@@ -41,7 +41,7 @@ class AuthService {
             }
 
             if (cycle > 1) {
-              username = 'Guest${_random.nextInt(9999999)}';
+              username = 'Guest${_random.nextInt(999999)}';
               uniqueUsername = true;
               break;
             }

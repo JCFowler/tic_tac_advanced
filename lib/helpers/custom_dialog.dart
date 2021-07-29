@@ -220,8 +220,8 @@ Future<dynamic> showAlertDialog(
   BuildContext context,
   String title, {
   String? content,
-  yesBtn = 'Yes',
-  noBtn = 'No',
+  String yesBtn = 'Yes',
+  String noBtn = 'No',
 }) {
   return _basicDialog(
     context,
@@ -230,12 +230,13 @@ Future<dynamic> showAlertDialog(
         Text(title,
             style: TextStyle(
               fontSize: 24,
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).accentColor,
             )),
         if (content != null)
           Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Text(content,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
@@ -248,10 +249,11 @@ Future<dynamic> showAlertDialog(
             Expanded(
               child: TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
+                child: Text(
                   'No',
                   style: TextStyle(
                     fontSize: 20,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
               ),
@@ -262,10 +264,11 @@ Future<dynamic> showAlertDialog(
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
-                child: const Text(
+                child: Text(
                   'Yes',
                   style: TextStyle(
                     fontSize: 20,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
               ),
@@ -332,8 +335,14 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
   );
 }
 
-showFriendsDialog(BuildContext context, FireService fireService, double height,
-    UserProvider userProvider, GameProvider gameProvider) {
+showFriendsDialog(
+  BuildContext context,
+  FireService fireService,
+  double height,
+  UserProvider userProvider,
+  GameProvider gameProvider, {
+  bool showDelete = true,
+}) {
   return _basicDialog(
     context,
     barrierDismissible: true,
@@ -361,7 +370,13 @@ showFriendsDialog(BuildContext context, FireService fireService, double height,
                 ),
               ),
             ),
-            child: _friendsList(fireService, userProvider, gameProvider),
+            child: _friendsList(
+              context,
+              fireService,
+              userProvider,
+              gameProvider,
+              showDelete,
+            ),
           )
         ],
       ),
@@ -369,8 +384,13 @@ showFriendsDialog(BuildContext context, FireService fireService, double height,
   );
 }
 
-Widget _friendsList(FireService fireService, UserProvider userProvider,
-    GameProvider gameProvider) {
+Widget _friendsList(
+  BuildContext context,
+  FireService fireService,
+  UserProvider userProvider,
+  GameProvider gameProvider,
+  bool showDelete,
+) {
   final _form = GlobalKey<FormState>();
 
   String? enteredText;
@@ -378,236 +398,220 @@ Widget _friendsList(FireService fireService, UserProvider userProvider,
   bool noUserFound = false;
   bool found = false;
 
-  return StatefulBuilder(
-    builder: (context, setState) {
-      return Column(
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                flex: 3,
-                child: Form(
-                  key: _form,
-                  child: SizedBox(
-                    height: 100,
-                    child: TextFormField(
-                      onSaved: (value) => enteredText = value,
-                      decoration: const InputDecoration(
-                        hintText: 'Friend\'s username',
-                        hintStyle: TextStyle(fontSize: 12),
-                        labelText: 'Add new friend',
-                        errorMaxLines: 2,
-                      ),
-                      maxLength: 12,
-                      maxLines: 1,
-                      validator: (value) {
-                        if (value == null || value.length <= 3) {
-                          return 'Username has to be at least 4 characters.';
-                        } else if (noUserFound) {
-                          return 'Couldn\'t find $value';
-                        }
-                        return null;
-                      },
-                    ),
+          Flexible(
+            flex: 3,
+            child: Form(
+              key: _form,
+              child: SizedBox(
+                height: 100,
+                child: TextFormField(
+                  onSaved: (value) => enteredText = value,
+                  decoration: const InputDecoration(
+                    hintText: 'Friend\'s username',
+                    hintStyle: TextStyle(fontSize: 12),
+                    labelText: 'Add new friend',
+                    errorMaxLines: 2,
                   ),
+                  maxLength: 12,
+                  maxLines: 1,
+                  validator: (value) {
+                    if (value == null || value.length <= 3) {
+                      return 'Username has to be at least 4 characters.';
+                    } else if (noUserFound) {
+                      return 'Couldn\'t find $value';
+                    }
+                    return null;
+                  },
                 ),
               ),
-              Flexible(
-                flex: 1,
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundColor:
-                      found ? Colors.green : Theme.of(context).primaryColor,
-                  child: IconButton(
-                    icon: loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: StatefulBuilder(builder: (builderContext, setState) {
+              return CircleAvatar(
+                radius: 25,
+                backgroundColor:
+                    found ? Colors.green : Theme.of(context).accentColor,
+                child: IconButton(
+                  icon: loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : found
+                          ? const Icon(
+                              Icons.check,
+                              size: 25,
+                            )
+                          : const Icon(
+                              Icons.search,
+                              size: 25,
                             ),
-                          )
-                        : found
-                            ? const Icon(
-                                Icons.check,
-                                size: 25,
-                              )
-                            : const Icon(
-                                Icons.search,
-                                size: 25,
-                              ),
-                    color: Colors.white,
-                    onPressed: () async {
-                      if (loading) return;
+                  color: Colors.white,
+                  onPressed: () async {
+                    if (loading) return;
 
+                    setState(() {
+                      noUserFound = false;
+                    });
+
+                    if (_form.currentState!.validate()) {
+                      _form.currentState!.save();
                       setState(() {
-                        noUserFound = false;
+                        loading = true;
                       });
 
-                      if (_form.currentState!.validate()) {
-                        _form.currentState!.save();
+                      var friend = await fireService.findUser(enteredText!);
+
+                      if (friend == null) {
                         setState(() {
-                          loading = true;
+                          noUserFound = true;
                         });
 
-                        var friend = await fireService.findUser(enteredText!);
-
-                        if (friend == null) {
-                          setState(() {
-                            noUserFound = true;
-                          });
-
-                          _form.currentState!.validate();
-                        } else {
-                          await fireService.addFriend(
-                              userProvider.user, friend);
-                          setState(() {
-                            found = true;
-                          });
-                          setTimeout(() {
-                            setState(() {
-                              found = false;
-                            });
-                          }, 2500);
-                          _form.currentState!.reset();
-                          FocusScope.of(context).unfocus();
-                        }
-
+                        _form.currentState!.validate();
+                      } else {
+                        await fireService.addFriend(userProvider.user!, friend);
                         setState(() {
-                          loading = false;
+                          found = true;
                         });
+                        setTimeout(() {
+                          setState(() {
+                            found = false;
+                          });
+                        }, 2500);
+                        _form.currentState!.reset();
+                        FocusScope.of(builderContext).unfocus();
                       }
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const Divider(),
-          Expanded(
-            child: StreamBuilder(
-                stream: userProvider.friendStream,
-                builder: (ctx, AsyncSnapshot<List<AppUser>> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  final friends = snapshot.data!;
 
-                  if (friends.isEmpty) {
-                    return const Center(
-                      child: Text('No friends yet...'),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: friends.length,
-                    itemBuilder: (ctx, index) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: ListTile(
-                          contentPadding:
-                              const EdgeInsets.only(left: 16, right: 4),
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              friends[index].username,
-                              style: const TextStyle(
-                                fontSize: 22,
-                              ),
-                            ),
+                      setState(() {
+                        loading = false;
+                      });
+                    }
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+      const Divider(),
+      Expanded(
+        child: StreamBuilder(
+            stream: userProvider.friendStream,
+            builder: (ctx, AsyncSnapshot<List<AppUser>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              final friends = snapshot.data!;
+
+              if (friends.isEmpty) {
+                return const Center(
+                  child: Text('No friends yet...'),
+                );
+              }
+              return ListView.builder(
+                itemCount: friends.length,
+                itemBuilder: (ctx, index) {
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.only(left: 16, right: 4),
+                      title: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          friends[index].username,
+                          style: const TextStyle(
+                            fontSize: 22,
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                    width: 1,
-                                    color: Colors.blue,
+                        ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          friends[index].invitedGame == null
+                              ? OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      width: 1,
+                                      color: Colors.blue,
+                                    ),
                                   ),
-                                ),
-                                onPressed: () {
-                                  showLoadingDialog(
+                                  onPressed: () {
+                                    gameProvider.hostInvitedGame(
+                                      context,
+                                      friends[index],
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Invite',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () => gameProvider.joinInvitedGame(
                                     context,
-                                    'Waiting for ${friends[index].username}...',
-                                  ).then((result) {
-                                    if (result == 'cancel') {
-                                      fireService.deleteInvite(
-                                        userProvider.user,
-                                        friends[index].uid,
-                                      );
-                                    }
-                                  });
-                                  fireService
-                                      .inviteFriendGame(
-                                          userProvider.user, friends[index])
-                                      .then(
-                                    (gameId) {
-                                      gameProvider.setGameDoc(gameId);
-                                      fireService
-                                          .gameMatchStream(gameId)
-                                          .firstWhere((gameModel) =>
-                                              gameModel != null &&
-                                              gameModel.addedPlayer != null)
-                                          .then(
-                                        (gameModel) {
-                                          gameProvider.setStartingPlayer(
-                                            gameModel!.hostPlayerGoesFirst
-                                                ? Player.Player1
-                                                : Player.Player2,
-                                          );
-                                          Navigator.of(context).pop();
-                                          Navigator.of(context)
-                                              .pushNamed(GameScreen.routeName);
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                                child: const Text(
-                                  'Invite',
-                                  style: TextStyle(
-                                    fontSize: 16,
+                                    friends[index].invitedGame!,
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              CircleAvatar(
-                                backgroundColor: Colors.red,
-                                child: Center(
-                                  child: IconButton(
-                                    color: Colors.white,
-                                    onPressed: () async {
-                                      await fireService.removeFriend(
-                                        userProvider.user,
-                                        friends[index],
-                                      );
-                                      setState(() {
-                                        null;
-                                      });
-                                    },
-                                    icon: const Icon(
-                                      Icons.close,
-                                      size: 22,
+                                  child: const Text(
+                                    'Join',
+                                    style: TextStyle(
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ),
+                          const SizedBox(width: 10),
+                          if (showDelete)
+                            CircleAvatar(
+                              backgroundColor: Colors.red,
+                              child: Center(
+                                child: IconButton(
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    showAlertDialog(
+                                      context,
+                                      'Remove friend?',
+                                      content:
+                                          'Are you sure you want to remove ${friends[index].username}?',
+                                    ).then((value) {
+                                      if (value) {
+                                        fireService.removeFriend(
+                                          userProvider.user!,
+                                          friends[index],
+                                        );
+                                      }
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.close,
+                                    size: 22,
+                                  ),
+                                ),
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                            ),
+                        ],
+                      ),
+                    ),
                   );
-                }),
-          ),
-        ],
-      );
-    },
+                },
+              );
+            }),
+      ),
+    ],
   );
 }

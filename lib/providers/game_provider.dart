@@ -3,16 +3,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../helpers/ai_helper.dart';
+import '../helpers/custom_dialog.dart';
 import '../helpers/timeout.dart';
+import '../models/app_user.dart';
 import '../models/constants.dart';
 import '../models/game_model.dart';
 import '../models/last_move.dart';
 import '../models/mark.dart';
+import '../screens/game_screen.dart';
 import '../services/fire_service.dart';
 
 class GameProvider with ChangeNotifier {
   String uid;
   String username;
+  AppUser? user;
 
   GameProvider(this.uid, this.username);
   final _fireService = FireService();
@@ -139,6 +143,7 @@ class GameProvider with ChangeNotifier {
     required AnimationController lineController,
     required BuildContext buildContext,
   }) {
+    _multiplayerData = null;
     _numberController = numberController;
     _lineController = lineController;
     _buildContext = buildContext;
@@ -322,5 +327,115 @@ class GameProvider with ChangeNotifier {
       controller.reset();
       return controller.forward();
     }
+  }
+
+  // Joining and Hosting game logic:
+
+  joinGame(BuildContext context, GameModel game) {
+    showLoadingDialog(context, 'Joining game...');
+    _fireService
+        .joinGame(
+      game.id,
+      uid,
+      username,
+    )
+        .then((value) {
+      setGameDoc(game.id);
+      setStartingPlayer(
+        game.hostPlayerGoesFirst ? Player.Player2 : Player.Player1,
+      );
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(GameScreen.routeName);
+    }).catchError((error) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text(
+          'Host ended game.',
+          textAlign: TextAlign.center,
+        ),
+      ));
+    });
+  }
+
+  hostGame(BuildContext context) {
+    showLoadingDialog(context, 'Waiting for second player...').then((result) {
+      if (result == 'cancel') {
+        _fireService.deleteGame(uid);
+      }
+    });
+    _fireService.createHostGame(uid, username).then(
+      (doc) {
+        setGameDoc(doc.id);
+        _fireService
+            .gameMatchStream(doc.id)
+            .firstWhere((gameModel) =>
+                gameModel != null && gameModel.addedPlayer != null)
+            .then(
+          (gameModel) {
+            setStartingPlayer(
+              gameModel!.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
+            );
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(GameScreen.routeName);
+          },
+        );
+      },
+    );
+  }
+
+  hostInvitedGame(BuildContext context, AppUser friend) {
+    showLoadingDialog(
+      context,
+      'Waiting for ${friend.username}...',
+    ).then((result) {
+      if (result == 'cancel') {
+        _fireService.deleteInvite(
+          user!,
+          friend.uid,
+        );
+      }
+    });
+    _fireService.inviteFriendGame(user!, friend).then(
+      (gameId) {
+        setGameDoc(gameId);
+        _fireService
+            .gameMatchStream(gameId)
+            .firstWhere((gameModel) =>
+                gameModel != null && gameModel.addedPlayer != null)
+            .then(
+          (gameModel) {
+            setStartingPlayer(
+              gameModel!.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
+            );
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(GameScreen.routeName);
+          },
+        );
+      },
+    );
+  }
+
+  joinInvitedGame(BuildContext context, Invited invited) {
+    showLoadingDialog(context, 'Joining ${invited.inviteeUsername}\'s game...');
+
+    _fireService.joinInvitedGame(invited.gameId, uid, username).then((doc) {
+      _fireService.removeInvitedGame(invited, uid);
+      setGameDoc(invited.gameId);
+      setStartingPlayer(
+        doc.data()!['hostPlayerGoesFirst'] ? Player.Player2 : Player.Player1,
+      );
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(GameScreen.routeName);
+    }).catchError((error) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 2),
+        content: Text(
+          'Host ended game.',
+          textAlign: TextAlign.center,
+        ),
+      ));
+    });
   }
 }

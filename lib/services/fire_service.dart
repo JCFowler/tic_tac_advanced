@@ -278,6 +278,7 @@ class FireService {
     newData['open'] = true;
     newData['gameMarks'] = json.encode(_convertGameMarksToJson(baseGameMarks));
     newData['lastMove'] = null;
+    newData['created'] = DateTime.now().toIso8601String();
 
     return _firestore.collection(gamesCol).doc(docId).update(newData);
   }

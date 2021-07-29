@@ -1,29 +1,14 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 
 import '../models/l10n.dart';
 
-var colorizeTextStyle = TextStyle(
+final colorizeTextStyle = TextStyle(
   fontSize: 50.0,
   fontFamily: 'Horizon',
   foreground: Paint()
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2
-    ..color = Colors.blue
-    ..shader = const LinearGradient(
-      colors: [
-        Colors.red,
-        Colors.red,
-        Colors.purple,
-        Colors.blue,
-        Colors.blue,
-      ],
-    ).createShader(
-      Rect.fromCircle(
-        center: const Offset(150.0, 55.0),
-        radius: 200.0,
-      ),
-    ),
+    ..color = Colors.purple,
 );
 
 class AppTitle extends StatelessWidget {
@@ -37,31 +22,42 @@ class AppTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
+    final Paint paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..color = Colors.purple.shade600;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        children: [
-          SizedBox(height: deviceSize.height * 0.15),
-          SizedBox(
+    return Column(
+      children: [
+        SizedBox(height: deviceSize.height * 0.12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: SizedBox(
             height: deviceSize.height * 0.15,
             child: FittedBox(
-              child: AnimatedTextKit(
-                animatedTexts: [
-                  TypewriterAnimatedText(
+              child: Stack(
+                children: [
+                  Text(
                     translate(text, context),
-                    speed: const Duration(milliseconds: 150),
-                    textStyle: colorizeTextStyle,
-                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 39,
+                      foreground: paint,
+                    ),
+                  ),
+                  Text(
+                    translate(text, context),
+                    style: TextStyle(
+                      fontSize: 40,
+                      color: Colors.blue[50],
+                    ),
                   ),
                 ],
-                isRepeatingAnimation: false,
               ),
             ),
           ),
-          SizedBox(height: deviceSize.height * 0.05),
-        ],
-      ),
+        ),
+        SizedBox(height: deviceSize.height * 0.05),
+      ],
     );
   }
 }

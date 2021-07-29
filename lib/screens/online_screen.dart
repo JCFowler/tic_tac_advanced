@@ -131,33 +131,7 @@ class _OnlineScreenState extends State<OnlineScreen>
                         Text(DateFormat('h:mm a').format(games[index].created)),
                     trailing: ElevatedButton(
                       onPressed: () {
-                        showLoadingDialog(context, 'Joining game...');
-                        _fireService
-                            .joinGame(
-                          games[index].id,
-                          userProvider.uid,
-                          userProvider.username,
-                        )
-                            .then((value) {
-                          gameProvider.setGameDoc(games[index].id);
-                          gameProvider.setStartingPlayer(
-                            games[index].hostPlayerGoesFirst
-                                ? Player.Player2
-                                : Player.Player1,
-                          );
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pushNamed(GameScreen.routeName);
-                        }).catchError((error) {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 2),
-                            content: Text(
-                              'Host ended game.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ));
-                        });
+                        gameProvider.joinGame(context, games[index]);
                       },
                       child: const Text('Play'),
                     ),
@@ -212,40 +186,7 @@ class _OnlineScreenState extends State<OnlineScreen>
                         DateFormat('h:mm a').format(invited[index].created)),
                     trailing: ElevatedButton(
                       onPressed: () {
-                        showLoadingDialog(
-                          context,
-                          'Joining ${invited[index].inviteeUsername}\'s game...',
-                        );
-                        _fireService
-                            .joinInvitedGame(
-                          invited[index].gameId,
-                          userProvider.uid,
-                          userProvider.username,
-                        )
-                            .then((doc) {
-                          _fireService.removeInvitedGame(
-                            invited[index],
-                            userProvider.uid,
-                          );
-                          gameProvider.setGameDoc(invited[index].gameId);
-                          gameProvider.setStartingPlayer(
-                            doc.data()!['hostPlayerGoesFirst']
-                                ? Player.Player2
-                                : Player.Player1,
-                          );
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pushNamed(GameScreen.routeName);
-                        }).catchError((error) {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 2),
-                            content: Text(
-                              'Host ended game.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ));
-                        });
+                        gameProvider.joinInvitedGame(context, invited[index]);
                       },
                       child: const Text('Play'),
                     ),
@@ -286,48 +227,16 @@ class _OnlineScreenState extends State<OnlineScreen>
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: Theme.of(context).accentColor,
                     child: const Icon(Icons.people, color: Colors.white),
-                    onTap: () {
-                      showLoadingDialog(context, 'Waiting for second player...')
-                          .then((result) {
-                        if (result == 'cancel') {
-                          _fireService.deleteGame(userProvider.uid);
-                        }
-                      });
-                      _fireService
-                          .createHostGame(
-                              userProvider.uid, userProvider.username)
-                          .then(
-                        (doc) {
-                          gameProvider.setGameDoc(doc.id);
-                          _fireService
-                              .gameMatchStream(doc.id)
-                              .firstWhere((gameModel) =>
-                                  gameModel != null &&
-                                  gameModel.addedPlayer != null)
-                              .then(
-                            (gameModel) {
-                              gameProvider.setStartingPlayer(
-                                gameModel!.hostPlayerGoesFirst
-                                    ? Player.Player1
-                                    : Player.Player2,
-                              );
-                              Navigator.of(context).pop();
-                              Navigator.of(context)
-                                  .pushNamed(GameScreen.routeName);
-                            },
-                          );
-                        },
-                      );
-                    },
+                    onTap: () => gameProvider.hostGame(context),
                   ),
                   SpeedDialChild(
                     label: 'Friend',
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: Theme.of(context).accentColor,
                     child: const Icon(Icons.person, color: Colors.white),
                     onTap: () {
                       showFriendsDialog(
@@ -336,6 +245,7 @@ class _OnlineScreenState extends State<OnlineScreen>
                         height,
                         userProvider,
                         gameProvider,
+                        showDelete: false,
                       );
                     },
                   ),
@@ -352,7 +262,7 @@ class _OnlineScreenState extends State<OnlineScreen>
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+        color: Theme.of(context).dialogBackgroundColor,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
         border: Border.all(
           color: Colors.black54,
@@ -369,7 +279,7 @@ class _OnlineScreenState extends State<OnlineScreen>
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+        color: Theme.of(context).dialogBackgroundColor,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
         border: Border.all(
           color: Colors.black54,
@@ -402,11 +312,23 @@ class _OnlineScreenState extends State<OnlineScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         TabBar(
-                          labelStyle: const TextStyle(fontSize: 28),
-                          labelColor: Theme.of(context).primaryColor,
+                          labelStyle: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          labelColor: Colors.purple.shade800,
+                          indicator: BoxDecoration(
+                            color: Theme.of(context).dialogBackgroundColor,
+                            // border: Border.all(
+                            //   // color: Colors.red,
+                            //   width: 2,
+                            // ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           unselectedLabelStyle: const TextStyle(
                             color: Colors.black,
-                            fontSize: 18,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w500,
                           ),
                           unselectedLabelColor: Colors.black,
                           tabs: [

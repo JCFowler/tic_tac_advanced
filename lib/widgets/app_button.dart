@@ -5,6 +5,11 @@ import '../models/constants.dart';
 import '../models/l10n.dart';
 import '../providers/game_provider.dart';
 
+final Paint _paint = Paint()
+  ..style = PaintingStyle.stroke
+  ..strokeWidth = 6
+  ..color = Colors.purple.shade600;
+
 class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
@@ -17,49 +22,45 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Paint paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..color = Colors.black
-      ..shader = LinearGradient(colors: [
-        Colors.red,
-        Colors.red,
-        Colors.purple[400]!,
-        Colors.blue,
-        Colors.blue,
-      ]).createShader(
-        Rect.fromCircle(
-          center: const Offset(150.0, 55.0),
-          radius: 200.0,
-        ),
-      );
+    final _deviceSize = MediaQuery.of(context).size;
 
     final translatedText = translate(text, context);
 
-    return TextButton(
-      onPressed: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: FittedBox(
-          child: Stack(
-            children: <Widget>[
-              // Stroked text as border.
-              Text(
-                translatedText,
-                style: TextStyle(
-                  fontSize: 40,
-                  foreground: paint,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      width: double.infinity,
+      height: _deviceSize.height * 0.12,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          primary: Theme.of(context).dialogBackgroundColor,
+          side: const BorderSide(
+            width: 1.0,
+            color: Colors.purple,
+          ),
+          elevation: 20,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: FittedBox(
+            child: Stack(
+              children: [
+                Text(
+                  translatedText,
+                  style: TextStyle(
+                    fontSize: 40,
+                    foreground: _paint,
+                  ),
                 ),
-              ),
-              // Solid text as fill.
-              Text(
-                translatedText,
-                style: TextStyle(
-                  fontSize: 40,
-                  color: Colors.blue[50],
+                Text(
+                  translatedText,
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.blue[50],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

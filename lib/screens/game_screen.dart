@@ -195,6 +195,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             : game.playerColor(Player.Player2),
         width: 3,
       );
+    } else if (game.gameOver && game.lastMovePosition == index) {
+      return Border.all(
+        color: game.player == Player.Player1
+            ? game.playerColor(Player.Player1)
+            : game.playerColor(Player.Player2),
+        width: 3,
+      );
     } else if (game.lastMovePosition == index) {
       return Border.all(
         color: game.player == Player.Player1
