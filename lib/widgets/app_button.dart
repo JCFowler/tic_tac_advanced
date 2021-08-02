@@ -13,11 +13,13 @@ final Paint _paint = Paint()
 class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
+  final Widget? child;
 
   const AppButton(
     this.text,
     this.onTap, {
     Key? key,
+    this.child,
   }) : super(key: key);
 
   @override
@@ -42,26 +44,27 @@ class AppButton extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: FittedBox(
-            child: Stack(
-              children: [
-                Text(
-                  translatedText,
-                  style: TextStyle(
-                    fontSize: 40,
-                    foreground: _paint,
-                  ),
+          child: child ??
+              FittedBox(
+                child: Stack(
+                  children: [
+                    Text(
+                      translatedText,
+                      style: TextStyle(
+                        fontSize: 40,
+                        foreground: _paint,
+                      ),
+                    ),
+                    Text(
+                      translatedText,
+                      style: TextStyle(
+                        fontSize: 40,
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  translatedText,
-                  style: TextStyle(
-                    fontSize: 40,
-                    color: Colors.blue[50],
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
         ),
       ),
     );
@@ -91,6 +94,23 @@ class NavigatorAppButton extends StatelessWidget {
         }
         Navigator.of(context).pushNamed(routeName);
       },
+    );
+  }
+}
+
+class LoadingAppButton extends StatelessWidget {
+  const LoadingAppButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppButton(
+      'loading',
+      () {},
+      child: CircularProgressIndicator(
+        color: Theme.of(context).accentColor,
+      ),
     );
   }
 }

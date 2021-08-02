@@ -51,14 +51,15 @@ class UserProvider with ChangeNotifier {
         _friendStream.add(user.friends);
         _invitedStream.add(user.invited);
         _createdGame = user.createdGame;
-
         notifyListeners();
       }
     });
   }
 
-  void updateUsername(String newName) {
-    _fire.updateUsername(user!, newName);
+  Future<void> updateUsername(String newName) {
+    return _fire
+        .updateUsername(user!, newName)
+        .then((_) => _username = newName);
   }
 
   Future<bool> createAnonymousUser() async {

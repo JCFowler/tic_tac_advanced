@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_title.dart';
 import '../widgets/background_gradient.dart';
+import '../widgets/game_app_bar.dart';
 import 'multiplayer_screen.dart';
-import 'settings_screen.dart';
 import 'single_player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -13,31 +13,33 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const GameAppBar(),
+      extendBodyBehindAppBar: true,
       body: BackgroundGradient(
-        child: Center(
-          child: Column(
-            children: [
-              const AppTitle('Tic Tac\nAdvanced'),
-              Expanded(
-                child: Column(
-                  children: const [
-                    NavigatorAppButton(
-                      'singlePlayer',
-                      routeName: SinglePlayerScreen.routeName,
-                    ),
-                    NavigatorAppButton(
-                      'multiplayer',
-                      routeName: MultiplayerScreen.routeName,
-                    ),
-                    NavigatorAppButton(
-                      'settings',
-                      routeName: SettingsScreen.routeName,
-                    ),
-                  ],
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const AppTitle('Tic Tac\nAdvanced'),
+            Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      NavigatorAppButton(
+                        'singlePlayer',
+                        routeName: SinglePlayerScreen.routeName,
+                      ),
+                      NavigatorAppButton(
+                        'multiplayer',
+                        routeName: MultiplayerScreen.routeName,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

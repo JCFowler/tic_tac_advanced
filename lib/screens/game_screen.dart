@@ -289,7 +289,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        appBar: const GameAppBar(),
+        appBar: const GameAppBar(gameScreen: true),
         body: SafeArea(
           child: Consumer<GameProvider>(
             builder: (ctx, game, _) => Stack(

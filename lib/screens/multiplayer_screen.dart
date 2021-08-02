@@ -36,9 +36,10 @@ class MultiplayerScreen extends StatelessWidget {
                 const NavigatorAppButton(
                   'localPlay',
                   routeName: GameScreen.routeName,
+                  gameType: GameType.Local,
                 ),
                 userProvider.uid == ''
-                    ? const CircularProgressIndicator()
+                    ? const LoadingAppButton()
                     : const NavigatorAppButton(
                         'onlinePlay',
                         routeName: OnlineScreen.routeName,

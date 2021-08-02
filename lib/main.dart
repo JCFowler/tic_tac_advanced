@@ -14,7 +14,6 @@ import 'screens/game_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/multiplayer_screen.dart';
 import 'screens/online_screen.dart';
-import 'screens/settings_screen.dart';
 import 'screens/single_player_screen.dart';
 
 void main() async {
@@ -58,15 +57,15 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: Consumer<LocaleProvider>(
-        builder: (ctx, locale, _) => MaterialApp(
+        builder: (ctx, localeProvider, _) => MaterialApp(
           localizationsDelegates: const [
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             AppLocalizations.delegate,
           ],
+          locale: localeProvider.locale,
           supportedLocales: l10nLanguages,
-          locale: locale.locale,
           title: 'Tic Tac Advanced',
           theme: ThemeData(
             primarySwatch: Colors.blue,
@@ -97,8 +96,6 @@ class MyApp extends StatelessWidget {
                 return _fadeTransition(const SinglePlayerScreen());
               case MultiplayerScreen.routeName:
                 return _fadeTransition(const MultiplayerScreen());
-              case SettingsScreen.routeName:
-                return _fadeTransition(const SettingsScreen());
               case OnlineScreen.routeName:
                 return _fadeTransition(const OnlineScreen());
               default:

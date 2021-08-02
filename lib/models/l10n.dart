@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const l10nLanguages = [
-  Locale('en', ''),
-  Locale('ja', ''),
+  Locale('en', 'English'),
+  Locale('ja', '日本語'),
 ];
 
 String translate(String key, BuildContext context) {
@@ -33,4 +33,5 @@ String translate(String key, BuildContext context) {
     default:
       return '!!$key';
   }
+  //  Text(AppLocalizations.of(context)!.hello('John')),
 }
