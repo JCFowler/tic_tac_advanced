@@ -6,11 +6,15 @@ import '../providers/game_provider.dart';
 
 class GameNumber extends StatelessWidget {
   final Mark mark;
+  final bool invert;
 
   const GameNumber(
-    this.mark, {
+    this.mark,
+    this.invert, {
     Key? key,
   }) : super(key: key);
+
+  getColor() {}
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,7 @@ class GameNumber extends StatelessWidget {
         mark.number != -1 ? mark.number.toString() : '',
         style: TextStyle(
           fontSize: 50,
-          color: game.playerColor(mark.player),
+          color: invert ? Colors.white : game.playerColor(mark.player),
         ),
       ),
     );

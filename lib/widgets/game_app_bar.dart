@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tic_tac_advanced/helpers/radiant_gradient_mask.dart';
 
 import '../helpers/custom_dialog.dart';
+import '../helpers/radiant_gradient_mask.dart';
+import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/user_provider.dart';
 
@@ -45,8 +46,15 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
         color: gameScreen ? Colors.black87 : Colors.white,
       ),
       actions: [
-        !gameScreen
-            ? RadiantGradientMask(
+        gameScreen
+            ? IconButton(
+                onPressed: Provider.of<GameProvider>(context, listen: false)
+                    .gameResart,
+                icon: const Icon(
+                  Icons.restart_alt,
+                ),
+              )
+            : RadiantGradientMask(
                 colors: const [
                   Color(0xfff5f7fa),
                   Color(0xffb8c6db),
@@ -66,18 +74,6 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               )
-            : IconButton(
-                onPressed: () => showSettingsDialog(
-                  context,
-                  _userProvider,
-                  _localeProvider,
-                ),
-                icon: const Icon(
-                  Icons.settings,
-                  size: 35,
-                  color: Colors.black87,
-                ),
-              ),
       ],
     );
   }

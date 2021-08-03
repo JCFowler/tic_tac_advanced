@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
 import '../models/constants.dart';
-import '../painters/line_painter.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
@@ -45,14 +44,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       content: 'Are you sure you want to quit the game?',
     );
 
-    if (result) {
+    if (result != null && result) {
       if (_docId != '') {
         if (_gameStream != null) _gameStream!.cancel();
         _fireService.leaveGame(_docId, _userId);
       }
     }
 
-    return result;
+    return result ?? false;
   }
 
   @override
@@ -138,33 +137,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  _addMark(int index, GameProvider game) {
-    game.addMark(index);
-
-    if (game.gameOver) {
-      _lineController.reset();
-      _lineController.forward().then(
-            (_) => {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Game finished!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        game.gameResart();
-                        Navigator.of(ctx).pop();
-                      },
-                      child: const Text('Play again?'),
-                    ),
-                  ],
-                ),
-              ),
-            },
-          );
-    }
-  }
-
   Widget _backgroundGradient(GameProvider game) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -187,15 +159,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  BoxBorder changeBorder(GameProvider game, int index) {
-    if (hover == index) {
-      return Border.all(
-        color: game.player == Player.Player1
-            ? game.playerColor(Player.Player1)
-            : game.playerColor(Player.Player2),
-        width: 3,
-      );
-    } else if (game.gameOver && game.lastMovePosition == index) {
+  BoxBorder _changeBorder(GameProvider game, int index) {
+    if (game.gameOver) {
+      for (var line in game.winningLine) {
+        if (index == line) {
+          return Border.all(
+            color: Colors.white,
+            width: 5,
+          );
+        }
+      }
+    }
+    if (hover == index || game.gameOver && game.lastMovePosition == index) {
       return Border.all(
         color: game.player == Player.Player1
             ? game.playerColor(Player.Player1)
@@ -216,70 +191,102 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
+  Color _getGameBoxColors(GameProvider game, int index) {
+    if (game.gameOver) {
+      for (var line in game.winningLine) {
+        if (index == line) {
+          return game.playerColor(game.player);
+        }
+      }
+    }
+    return Colors.white;
+  }
+
+  Duration _animationDuration(GameProvider game, int index) {
+    if (hover != -1) return const Duration(milliseconds: 0);
+
+    if (game.gameOver) {
+      for (var i = 0; i < game.winningLine.length; i++) {
+        if (index == game.winningLine[i]) {
+          return Duration(milliseconds: 250 * (i + 1));
+        }
+      }
+    }
+
+    return const Duration(milliseconds: 200);
+  }
+
   Widget _gameBoard(GameProvider game) {
     return Expanded(
-      child: CustomPaint(
-        foregroundPainter: game.gameOver ? LinePainter(game, _progress) : null,
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 9,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-          ),
-          itemBuilder: (ctx, index) {
-            return GestureDetector(
-              onTap: () => _addMark(index, game),
-              child: DragTarget<int>(
-                builder: (
-                  BuildContext context,
-                  List<dynamic> accepted,
-                  List<dynamic> rejected,
-                ) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      border: changeBorder(game, index),
-                    ),
-                    child: Center(
-                      child: game.gameMarks[index] != null
-                          ? game.gameDoc == ''
-                              ? RotationTransition(
-                                  turns: game.player == Player.Player2
-                                      ? _rotateAnimationFirst!
-                                      : _rotateAnimationSecond!,
-                                  child: GameNumber(game.gameMarks[index]!),
-                                )
-                              : GameNumber(game.gameMarks[index]!)
-                          : const Text(''),
-                    ),
-                  );
-                },
-                onAccept: (int data) {
-                  _addMark(index, game);
-                  setState(() {
-                    hover = -1;
-                  });
-                },
-                onLeave: (int? data) {
-                  setState(() {
-                    hover = -1;
-                  });
-                },
-                onWillAccept: (int? data) {
-                  if (game.gameMarks[index] == null ||
-                      data! > game.gameMarks[index]!.number) {
-                    setState(() {
-                      hover = index;
-                    });
-                  }
-                  return true;
-                },
-              ),
-            );
-          },
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 9,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
         ),
+        itemBuilder: (ctx, index) {
+          return GestureDetector(
+            onTap: () => game.addMark(index),
+            child: DragTarget<int>(
+              builder: (
+                BuildContext context,
+                List<dynamic> accepted,
+                List<dynamic> rejected,
+              ) {
+                return AnimatedContainer(
+                  curve: Curves.elasticIn,
+                  duration: _animationDuration(game, index),
+                  decoration: BoxDecoration(
+                    color: _getGameBoxColors(game, index),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: _changeBorder(game, index),
+                  ),
+                  child: Center(
+                    child: game.gameMarks[index] != null
+                        ? game.gameDoc == ''
+                            ? RotationTransition(
+                                turns: game.player == Player.Player2
+                                    ? _rotateAnimationFirst!
+                                    : _rotateAnimationSecond!,
+                                child: GameNumber(
+                                  game.gameMarks[index]!,
+                                  game.gameOver &&
+                                      game.winningLine.contains(index),
+                                ),
+                              )
+                            : GameNumber(
+                                game.gameMarks[index]!,
+                                game.gameOver &&
+                                    game.winningLine.contains(index),
+                              )
+                        : const Text(''),
+                  ),
+                );
+              },
+              onAccept: (int data) {
+                game.addMark(index);
+                setState(() {
+                  hover = -1;
+                });
+              },
+              onLeave: (int? data) {
+                setState(() {
+                  hover = -1;
+                });
+              },
+              onWillAccept: (int? data) {
+                if (game.gameMarks[index] == null ||
+                    data! > game.gameMarks[index]!.number) {
+                  setState(() {
+                    hover = index;
+                  });
+                }
+                return true;
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -315,7 +322,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     NumberBoard(
-                        Player.Player1, game.getPlayerUsername(Player.Player1)),
+                      Player.Player1,
+                      game.getPlayerUsername(Player.Player1),
+                    ),
                   ],
                 ),
               ],

@@ -50,6 +50,8 @@ class GameProvider with ChangeNotifier {
 
   var _gameDoc = '';
 
+  bool _gameTied = false;
+
   int get selectedNumber {
     return _selectedNumber;
   }
@@ -70,7 +72,6 @@ class GameProvider with ChangeNotifier {
     return _gameDoc;
   }
 
-  /// If no player is passed, will get current player.
   Color playerColor(Player player) {
     if (player == Player.Player1) {
       return _colors[Player.Player1] as Color;
@@ -169,6 +170,7 @@ class GameProvider with ChangeNotifier {
 
           if (!gameFinished) {
             changePlayer();
+            _gameTied = checkForTieGame();
             // _runAnimation(_numberController);
           }
         }, 800);
@@ -177,6 +179,17 @@ class GameProvider with ChangeNotifier {
   }
 
   void addMark(int position) {
+    if (_gameTied) {
+      _showDialog('Game Tied', yesText: 'Play again');
+    }
+    if (gameOver) {
+      _showDialog(
+        'Game finished!',
+        content: getWinningContentString(),
+        yesText: 'Play again',
+      );
+    }
+
     if (_selectedNumber != -1 && !gameOver) {
       if (_gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] = Mark(_selectedNumber, _player);
@@ -191,6 +204,7 @@ class GameProvider with ChangeNotifier {
 
         if (!gameFinished) {
           changePlayer();
+          _gameTied = checkForTieGame();
           _runAnimation(_numberController).then(
             (value) => {
               if (player == Player.Player2 && gameType != GameType.Local)
@@ -262,13 +276,13 @@ class GameProvider with ChangeNotifier {
           increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
 
           notifyListeners();
-          _runAnimation(_lineController).then(
-            (_) {
-              if (_buildContext == null) return;
-
-              _showDialog('Game finished!', 'Play again?');
-            },
-          );
+          setTimeout(() {
+            _showDialog(
+              'Game finished!',
+              content: getWinningContentString(),
+              yesText: 'Play again?',
+            );
+          }, 900);
           return true;
         }
       }
@@ -276,22 +290,57 @@ class GameProvider with ChangeNotifier {
     return false;
   }
 
-  void _showDialog(String title, String body) {
-    showDialog(
-      context: _buildContext!,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        actions: [
-          TextButton(
-            onPressed: () {
-              gameResart();
-              Navigator.of(ctx).pop();
-            },
-            child: Text(body),
-          ),
-        ],
-      ),
-    );
+  bool checkForTieGame() {
+    var lowestNum = 10;
+    for (var mark in _gameMarks.values) {
+      if (mark.player == Player.None) {
+        return false;
+      }
+      lowestNum = min(lowestNum, mark.number);
+    }
+
+    if (player == Player.Player1) {
+      for (var i = lowestNum; i < _player1Numbers.length + 1; i++) {
+        if (!_player1Numbers[i]!) {
+          return false;
+        }
+      }
+    } else {
+      for (var i = lowestNum; i < _player2Numbers.length + 1; i++) {
+        if (!_player1Numbers[i]!) {
+          return false;
+        }
+      }
+    }
+
+    _showDialog('Game Tied', yesText: 'Play Again');
+    return true;
+  }
+
+  String getWinningContentString() {
+    if (player == Player.Player1) {
+      return 'Blue player won!';
+    } else {
+      return 'Red player won!';
+    }
+  }
+
+  void _showDialog(String title, {String? content, yesText = 'Yes'}) {
+    if (_gameType == GameType.Online) {
+      showOnlineRematchDialog(_buildContext!, title, content: content);
+    } else {
+      showAlertDialog(
+        _buildContext!,
+        title,
+        content: content,
+        singleButton: true,
+        yesBtnText: yesText,
+      ).then((value) {
+        if (value != null && value) {
+          gameResart();
+        }
+      });
+    }
   }
 
   void gameResart({bool? hostPlayerGoesFirst}) {
@@ -317,6 +366,7 @@ class GameProvider with ChangeNotifier {
     });
     _selectedNumber = -1;
     _winningLine = [];
+    _gameTied = false;
     _gameMarks.updateAll((key, value) => value = Mark(-1, Player.None));
     _lastMovePosition = -1;
     _startingPlayer = _player;

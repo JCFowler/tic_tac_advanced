@@ -110,6 +110,41 @@ Widget _bottomSubmitButton({
   );
 }
 
+Widget _basicHeader(BuildContext context, String title) {
+  return SizedBox(
+    height: 32,
+    child: Stack(
+      children: [
+        Align(
+          alignment: Alignment.center,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              translate(title, context),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.topRight,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(
+              Icons.close,
+              size: 30,
+              color: Colors.red,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<dynamic> showChangeUsernameDialog(
   BuildContext context, {
   FireService? fireService,
@@ -150,8 +185,9 @@ Future<dynamic> showChangeUsernameDialog(
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).errorColor,
-                  borderRadius:
-                      const BorderRadius.only(topRight: Radius.circular(10)),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(10),
+                  ),
                 ),
                 child: IconButton(
                   onPressed: () {
@@ -224,17 +260,103 @@ Future<dynamic> showChangeUsernameDialog(
   );
 }
 
-Future<dynamic> showAlertDialog(
+Future<bool?> showAlertDialog(
   BuildContext context,
   String title, {
   String? content,
+  bool barrierDismissible = true,
+  bool singleButton = false,
+  String yesBtnText = 'Yes',
+  String noBtnText = 'No',
+}) {
+  return _basicDialog(
+    context,
+    barrierDismissible: barrierDismissible,
+    child: Column(
+      children: [
+        Text(title,
+            style: TextStyle(
+              fontSize: 24,
+              color: Theme.of(context).accentColor,
+            )),
+        if (content != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text(content,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                )),
+          ),
+        const SizedBox(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            if (!singleButton)
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.purple,
+                    minimumSize: const Size(
+                      double.infinity,
+                      40,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(
+                    noBtnText,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            if (!singleButton) const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.purple,
+                  minimumSize: const Size(
+                    double.infinity,
+                    40,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text(
+                  yesBtnText,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+      ],
+    ),
+  );
+}
+
+Future<dynamic> showOnlineRematchDialog(
+  BuildContext context,
+  String title, {
+  String? content,
+  bool barrierDismissible = false,
   String yesBtn = 'Yes',
   String noBtn = 'No',
 }) {
   return _basicDialog(
     context,
+    barrierDismissible: barrierDismissible,
     child: Column(
       children: [
+        Text('Online'),
         Text(title,
             style: TextStyle(
               fontSize: 24,
@@ -367,14 +489,7 @@ showFriendsDialog(
       height: height,
       child: Column(
         children: [
-          Text(
-            'Friends',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
+          _basicHeader(context, 'Friends'),
           Divider(
             thickness: 1.5,
             color: Theme.of(context).primaryColor,
@@ -578,7 +693,7 @@ showFriendsDialog(
                                             content:
                                                 'Are you sure you want to remove ${friends[index].username}?',
                                           ).then((value) {
-                                            if (value) {
+                                            if (value != null && value) {
                                               fireService.removeFriend(
                                                 userProvider.user!,
                                                 friends[index],
@@ -634,20 +749,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
         builder: (builderContext, setState) {
           return Column(
             children: [
-              SizedBox(
-                height: _deviceSize.height * 0.06,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    translate('settings', context),
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ),
-              ),
+              _basicHeader(context, 'settings'),
               Divider(
                 thickness: 1.5,
                 color: Theme.of(context).primaryColor,

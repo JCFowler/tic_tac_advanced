@@ -37,15 +37,3 @@ final Map<int, Mark> baseGameMarks = {
   7: Mark(-1, Player.None),
   8: Mark(-1, Player.None),
 };
-
-final Map<String, Mark> baseGameMarks2 = {
-  '0': Mark(-1, Player.None),
-  '1': Mark(-1, Player.None),
-  '2': Mark(-1, Player.None),
-  '3': Mark(-1, Player.None),
-  '4': Mark(-1, Player.None),
-  '5': Mark(-1, Player.None),
-  '6': Mark(-1, Player.None),
-  '7': Mark(-1, Player.None),
-  '8': Mark(-1, Player.None),
-};
