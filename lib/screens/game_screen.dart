@@ -7,8 +7,6 @@ import 'package:provider/provider.dart';
 import '../helpers/custom_dialog.dart';
 import '../models/constants.dart';
 import '../providers/game_provider.dart';
-import '../providers/user_provider.dart';
-import '../services/fire_service.dart';
 import '../widgets/game_app_bar.dart';
 import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
@@ -24,17 +22,9 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
-  double _progress = 0.0;
   late AnimationController _numberController;
-  late AnimationController _lineController;
   Animation<double>? _rotateAnimationFirst;
   Animation<double>? _rotateAnimationSecond;
-  Animation<double>? _lineAnimation;
-  final _fireService = FireService();
-  var _docId = '';
-  var _userId = '';
-  StreamSubscription? _gameStream;
-  var _showingDialog = false;
   var hover = -1;
 
   Future<bool> _onWillPop() async {
@@ -45,10 +35,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     if (result != null && result) {
-      if (_docId != '') {
-        if (_gameStream != null) _gameStream!.cancel();
-        _fireService.leaveGame(_docId, _userId);
-      }
+      Provider.of<GameProvider>(context, listen: false).leaveOnlineGame();
     }
 
     return result ?? false;
@@ -62,18 +49,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-
-    _lineController = AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    );
-
-    _lineAnimation = Tween(begin: 0.0, end: 1.0).animate(_lineController)
-      ..addListener(() {
-        setState(() {
-          _progress = _lineAnimation!.value;
-        });
-      });
 
     _rotateAnimationFirst = Tween<double>(
       begin: 0,
@@ -89,50 +64,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     final gameProvider = Provider.of<GameProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
     gameProvider.initalizeGame(
       numberController: _numberController,
-      lineController: _lineController,
       buildContext: context,
     );
 
     if (gameProvider.gameType == GameType.Online) {
-      _userId = userProvider.uid;
-      _gameStream = _fireService
-          .gameMatchStream(gameProvider.gameDoc)
-          .listen((gameModel) {
-        _docId = gameProvider.gameDoc;
-
-        if (gameModel != null) {
-          gameProvider.setMultiplayerData(gameModel);
-          if (gameModel.addedPlayer == null) {
-            showLoadingDialog(context, 'Waiting for new player...')
-                .then((result) {
-              if (result == 'cancel') {
-                _fireService.deleteGame(_userId);
-                Navigator.of(context).pop();
-              }
-            });
-            _showingDialog = true;
-            gameProvider.gameResart(
-                hostPlayerGoesFirst: gameModel.hostPlayerGoesFirst);
-          } else {
-            if (_showingDialog) {
-              _showingDialog = false;
-              Navigator.of(context).pop();
-            }
-            if (gameModel.lastMove != null) {
-              gameProvider.addOnlineMark(gameModel.lastMove!);
-            }
-          }
-        }
-      });
+      gameProvider.startGameStream();
     }
   }
 
   @override
   void dispose() {
-    _lineController.dispose();
     _numberController.dispose();
     super.dispose();
   }

@@ -261,7 +261,7 @@ class FireService {
     return _firestore.collection(gamesCol).doc(docId).get();
   }
 
-  Future<void> leaveGame(String docId, String uid) async {
+  Future<void> leaveGame(String docId, String uid, bool autoOpen) async {
     var doc = await _firestore.collection(gamesCol).doc(docId).get();
 
     if (doc.data() == null) return;
@@ -275,12 +275,22 @@ class FireService {
 
     newData['addedPlayer'] = null;
     newData['addedPlayerUid'] = null;
-    newData['open'] = true;
+    newData['open'] = autoOpen;
     newData['gameMarks'] = json.encode(_convertGameMarksToJson(baseGameMarks));
     newData['lastMove'] = null;
     newData['created'] = DateTime.now().toIso8601String();
 
     return _firestore.collection(gamesCol).doc(docId).update(newData);
+  }
+
+  Future<void> restartGame(String docId, bool hostPlayerGoesFirst) async {
+    await _firestore.collection(gamesCol).doc(docId).update({
+      'gameMarks': json.encode(_convertGameMarksToJson(baseGameMarks)),
+      'hostRematch': null,
+      'addedRematch': null,
+      'lastMove': null,
+      'hostPlayerGoesFirst': hostPlayerGoesFirst,
+    });
   }
 
   Future<void> deleteGame(String uid) async {
@@ -313,5 +323,20 @@ class FireService {
       'gameMarks': json.encode(_convertGameMarksToJson(gameMarks)),
       'lastMove': json.encode(thisMove),
     });
+  }
+
+  Future<void> rematch(String docId, bool isHost, bool answer) async {
+    return _firestore.collection(gamesCol).doc(docId).update(
+      {isHost ? 'hostRematch' : 'addedRematch': answer},
+    );
+  }
+
+  resetRematch(String docId) {
+    _firestore.collection(gamesCol).doc(docId).update(
+      {
+        'hostRematch': null,
+        'addedRematch': null,
+      },
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -21,10 +22,12 @@ class GameProvider with ChangeNotifier {
   GameProvider(this.uid, this.username);
   final _fireService = FireService();
   GameModel? _multiplayerData;
+  MultiplayerNames? _multiplayerNames;
 
   AnimationController? _numberController;
-  AnimationController? _lineController;
   BuildContext? _buildContext;
+
+  StreamSubscription<GameModel?>? _gameStream;
 
   int _selectedNumber = -1;
   Player _player = Player.Player1;
@@ -96,8 +99,12 @@ class GameProvider with ChangeNotifier {
     return _winningLine.isNotEmpty;
   }
 
-  GameModel? get getMultiplayerData {
+  GameModel? get multiplayerData {
     return _multiplayerData;
+  }
+
+  MultiplayerNames? get multiplayerNames {
+    return _multiplayerNames;
   }
 
   void setGameType(GameType type) {
@@ -117,8 +124,56 @@ class GameProvider with ChangeNotifier {
   }
 
   void setMultiplayerData(GameModel data) {
+    var newNames = MultiplayerNames.getNames(data);
+    if (newNames != null) {
+      _multiplayerNames = newNames;
+    }
     _multiplayerData = data;
+
     notifyListeners();
+  }
+
+  var _waitingDiagOpen = false;
+
+  void startGameStream() {
+    if (gameDoc.isEmpty || _buildContext == null) return;
+
+    _gameStream = _fireService.gameMatchStream(gameDoc).listen((gameModel) {
+      if (gameModel != null) {
+        setMultiplayerData(gameModel);
+        if (gameModel.addedPlayer == null) {
+          if (gameModel.hostRematch == false ||
+              gameModel.addedRematch == false) {
+          } else {
+            _waitingDiagOpen = true;
+            showLoadingDialog(_buildContext!, 'Waiting for new player...')
+                .then((result) {
+              if (result == 'cancel') {
+                _waitingDiagOpen = false;
+                leaveOnlineGame();
+                Navigator.of(_buildContext!).pop();
+              }
+            });
+            gameRestart(hostPlayerGoesFirst: gameModel.hostPlayerGoesFirst);
+          }
+        } else if (gameModel.hostRematch != null ||
+            gameModel.addedRematch != null) {
+          return;
+        } else {
+          if (_waitingDiagOpen) {
+            _waitingDiagOpen = false;
+            Navigator.pop(_buildContext!);
+          }
+          if (gameModel.lastMove != null) {
+            addOnlineMark(gameModel.lastMove!);
+          }
+        }
+      }
+    });
+  }
+
+  void endGameStream() {
+    if (_gameStream != null) _gameStream!.cancel();
   }
 
   String getPlayerUsername(Player player) {
@@ -139,14 +194,31 @@ class GameProvider with ChangeNotifier {
     }
   }
 
+  String getStaticUsername(Player player) {
+    if (_multiplayerNames == null) return '';
+    if (player == Player.Player1) {
+      return username;
+    } else {
+      if (_multiplayerNames!.hostPlayerUid == uid) {
+        return _multiplayerNames!.addedPlayer;
+      } else {
+        return _multiplayerNames!.hostPlayer;
+      }
+    }
+  }
+
+  bool isHostPlayer(Player player) {
+    if (_multiplayerData == null) return false;
+
+    return _multiplayerData!.hostPlayerUid == uid;
+  }
+
   void initalizeGame({
     required AnimationController numberController,
-    required AnimationController lineController,
     required BuildContext buildContext,
   }) {
     _multiplayerData = null;
     _numberController = numberController;
-    _lineController = lineController;
     _buildContext = buildContext;
 
     _player = _startingPlayer;
@@ -173,8 +245,8 @@ class GameProvider with ChangeNotifier {
             _gameTied = checkForTieGame();
             // _runAnimation(_numberController);
           }
-        }, 800);
-      }, 300);
+        }, 600);
+      }, 100);
     }
   }
 
@@ -327,7 +399,13 @@ class GameProvider with ChangeNotifier {
 
   void _showDialog(String title, {String? content, yesText = 'Yes'}) {
     if (_gameType == GameType.Online) {
-      showOnlineRematchDialog(_buildContext!, title, content: content);
+      showOnlineRematchDialog(
+        _buildContext!,
+        this,
+        _multiplayerData!,
+        stream: _fireService.gameMatchStream(gameDoc),
+        won: player == Player.Player1,
+      );
     } else {
       showAlertDialog(
         _buildContext!,
@@ -337,13 +415,13 @@ class GameProvider with ChangeNotifier {
         yesBtnText: yesText,
       ).then((value) {
         if (value != null && value) {
-          gameResart();
+          gameRestart();
         }
       });
     }
   }
 
-  void gameResart({bool? hostPlayerGoesFirst}) {
+  void gameRestart({bool? hostPlayerGoesFirst}) {
     if (hostPlayerGoesFirst != null) {
       _player = hostPlayerGoesFirst ? Player.Player1 : Player.Player2;
     } else {
@@ -359,6 +437,22 @@ class GameProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updateRematch(answer) async {
+    if (_multiplayerData != null) {
+      await _fireService.rematch(
+        _multiplayerData!.id,
+        _multiplayerData!.hostPlayerUid == uid,
+        answer,
+      );
+    }
+  }
+
+  Future<void> resetRematch() async {
+    if (_multiplayerData != null) {
+      return _fireService.resetRematch(_multiplayerData!.id);
+    }
+  }
+
   void _resetVariables() {
     _player1Numbers.forEach((key, value) {
       _player1Numbers[key] = false;
@@ -370,6 +464,19 @@ class GameProvider with ChangeNotifier {
     _gameMarks.updateAll((key, value) => value = Mark(-1, Player.None));
     _lastMovePosition = -1;
     _startingPlayer = _player;
+  }
+
+  Future<void> restartOnlineGame({runFirebase = true}) async {
+    if (runFirebase) {
+      return _fireService.restartGame(
+        gameDoc,
+        !multiplayerData!.hostPlayerGoesFirst,
+      );
+    } else {
+      _player =
+          _startingPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
+      _resetVariables();
+    }
   }
 
   Future<void> _runAnimation(AnimationController? controller) async {
@@ -408,7 +515,7 @@ class GameProvider with ChangeNotifier {
     });
   }
 
-  hostGame(BuildContext context) {
+  hostGame(BuildContext context, {popGameScreen = false}) {
     showLoadingDialog(context, 'Waiting for second player...').then((result) {
       if (result == 'cancel') {
         _fireService.deleteGame(uid);
@@ -427,6 +534,7 @@ class GameProvider with ChangeNotifier {
               gameModel!.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
             );
             Navigator.of(context).pop();
+            if (popGameScreen) Navigator.of(context).pop();
             Navigator.of(context).pushNamed(GameScreen.routeName);
           },
         );
@@ -479,6 +587,7 @@ class GameProvider with ChangeNotifier {
       Navigator.of(context).pushNamed(GameScreen.routeName);
     }).catchError((error) {
       Navigator.of(context).pop();
+      _fireService.removeInvitedGame(invited, uid);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 2),
         content: Text(
@@ -487,5 +596,17 @@ class GameProvider with ChangeNotifier {
         ),
       ));
     });
+  }
+
+  Future<void> leaveOnlineGame({bool autoOpen = true}) async {
+    if (gameType == GameType.Online) {
+      endGameStream();
+      gameRestart();
+      if (multiplayerData == null || multiplayerData!.addedPlayer == null) {
+        return _fireService.deleteGame(uid);
+      } else {
+        return _fireService.leaveGame(gameDoc, uid, autoOpen);
+      }
+    }
   }
 }

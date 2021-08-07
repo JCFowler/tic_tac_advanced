@@ -17,6 +17,8 @@ class GameModel {
   DateTime created;
   bool hostPlayerGoesFirst;
   bool open;
+  bool? hostRematch;
+  bool? addedRematch;
 
   GameModel(
     this.id,
@@ -29,6 +31,8 @@ class GameModel {
     this.created,
     this.hostPlayerGoesFirst,
     this.open,
+    this.hostRematch,
+    this.addedRematch,
   );
 
   Map<String, dynamic> toJson() {
@@ -78,8 +82,41 @@ class GameModel {
       DateTime.parse(data['created']),
       data['hostPlayerGoesFirst'],
       data['open'],
+      data['hostRematch'],
+      data['addedRematch'],
     );
 
     return result;
+  }
+}
+
+class MultiplayerNames {
+  String hostPlayer;
+  String hostPlayerUid;
+  String addedPlayer;
+  String addedPlayerUid;
+  bool? hostRematch;
+  bool? addedRematch;
+
+  MultiplayerNames(
+    this.hostPlayer,
+    this.hostPlayerUid,
+    this.addedPlayer,
+    this.addedPlayerUid,
+    this.hostRematch,
+    this.addedRematch,
+  );
+
+  static MultiplayerNames? getNames(GameModel? gameModel) {
+    if (gameModel != null && gameModel.addedPlayer != null) {
+      return MultiplayerNames(
+        gameModel.hostPlayer,
+        gameModel.hostPlayerUid,
+        gameModel.addedPlayer!,
+        gameModel.addedPlayerUid!,
+        gameModel.hostRematch,
+        gameModel.addedRematch,
+      );
+    }
   }
 }

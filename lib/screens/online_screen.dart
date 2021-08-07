@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:tic_tac_advanced/widgets/spinning_icon.dart';
 
 import '../helpers/custom_dialog.dart';
 import '../models/app_user.dart';
@@ -21,25 +24,21 @@ class OnlineScreen extends StatefulWidget {
   _OnlineScreenState createState() => _OnlineScreenState();
 }
 
-class _OnlineScreenState extends State<OnlineScreen>
-    with SingleTickerProviderStateMixin {
+class _OnlineScreenState extends State<OnlineScreen> {
   final _fireService = FireService();
-
-  late final AnimationController _animation = AnimationController(
-    duration: const Duration(milliseconds: 3600),
-    vsync: this,
-  )..repeat();
+  late Stream<List<GameModel>> openGamesStream;
 
   @override
-  void dispose() {
-    _animation.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    openGamesStream = _fireService.openGamesStream(userProvider.uid);
   }
 
-  Widget _gameStream(BuildContext context, GameProvider gameProvider,
-      UserProvider userProvider) {
+  Widget _gameStream(BuildContext context, GameProvider gameProvider) {
     return StreamBuilder(
-      stream: _fireService.openGamesStream(userProvider.uid),
+      stream: openGamesStream,
       builder: (ctx, AsyncSnapshot<List<GameModel>> streamSnapshot) {
         if (streamSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -53,15 +52,14 @@ class _OnlineScreenState extends State<OnlineScreen>
           child: games.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RotationTransition(
-                      turns: _animation,
-                      child: const Icon(
+                  children: const [
+                    SpinningIcon(
+                      icon: Icon(
                         Icons.sentiment_dissatisfied,
                         size: 60,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'No games yet',
                       style: TextStyle(
                         fontSize: 22,
@@ -108,15 +106,14 @@ class _OnlineScreenState extends State<OnlineScreen>
           child: invited.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RotationTransition(
-                      turns: _animation,
-                      child: const Icon(
+                  children: const [
+                    SpinningIcon(
+                      icon: Icon(
                         Icons.sentiment_dissatisfied,
                         size: 60,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'No games yet',
                       style: TextStyle(
                         fontSize: 22,
@@ -217,7 +214,7 @@ class _OnlineScreenState extends State<OnlineScreen>
           color: Colors.black54,
         ),
       ),
-      child: _gameStream(context, gameProvider, userProvider),
+      child: _gameStream(context, gameProvider),
     );
   }
 
@@ -240,10 +237,13 @@ class _OnlineScreenState extends State<OnlineScreen>
 
   @override
   Widget build(BuildContext context) {
-    final _gameProvider = Provider.of<GameProvider>(context);
-    final _userProvider = Provider.of<UserProvider>(context);
+    final _gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final _userProvider = Provider.of<UserProvider>(context, listen: false);
     final _deviceSize = MediaQuery.of(context).size;
 
+    final topPadding = MediaQuery.of(context).padding.top +
+        const GameAppBar().preferredSize.height -
+        10;
     return Scaffold(
       appBar: GameAppBar(
         title: _userProvider.username,
@@ -258,7 +258,7 @@ class _OnlineScreenState extends State<OnlineScreen>
       extendBodyBehindAppBar: true,
       body: BackgroundGradient(
         child: Padding(
-          padding: const EdgeInsets.only(top: 65),
+          padding: EdgeInsets.only(top: topPadding),
           child: SingleChildScrollView(
             child: Column(
               children: [

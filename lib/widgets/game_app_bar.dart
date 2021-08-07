@@ -40,6 +40,7 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : null,
+      centerTitle: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
       iconTheme: IconThemeData(
@@ -49,7 +50,7 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
         gameScreen
             ? IconButton(
                 onPressed: Provider.of<GameProvider>(context, listen: false)
-                    .gameResart,
+                    .gameRestart,
                 icon: const Icon(
                   Icons.restart_alt,
                 ),

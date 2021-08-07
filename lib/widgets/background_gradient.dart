@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-const double opacity = 0.7;
+const double opacity = 0.9;
 List<List<Color>> colors = [
   [
     Colors.blue.withOpacity(opacity),
-    Colors.purple.withOpacity(0.6),
+    Colors.purple.withOpacity(0.7),
     Colors.red.withOpacity(opacity),
   ],
 ];

@@ -31,7 +31,7 @@ class AppButton extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       width: double.infinity,
-      height: _deviceSize.height * 0.12,
+      height: _deviceSize.height * 0.1,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
