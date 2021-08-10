@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../helpers/snack_bar_helper.dart';
 import '../models/app_user.dart';
 import '../services/auth_service.dart';
 import '../services/fire_service.dart';
@@ -17,6 +18,7 @@ class UserProvider with ChangeNotifier {
   Invited? _createdGame;
   final StreamController<List<AppUser>> _friendStream = BehaviorSubject();
   final StreamController<List<Invited>> _invitedStream = BehaviorSubject();
+  List<Invited> _oldInvites = [];
 
   String get uid {
     return _uid;
@@ -51,7 +53,18 @@ class UserProvider with ChangeNotifier {
         _friendStream.add(user.friends);
         _invitedStream.add(user.invited);
         _createdGame = user.createdGame;
+
         notifyListeners();
+
+        if (user.invited.length > _oldInvites.length) {
+          List<Invited> newInvite = user.invited
+              .where((element) => !_oldInvites.contains(element))
+              .toList();
+
+          showInviteSnackBar(newInvite[0]);
+        }
+
+        _oldInvites = user.invited;
       }
     });
   }
