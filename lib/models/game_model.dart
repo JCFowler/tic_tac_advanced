@@ -17,6 +17,8 @@ class GameModel {
   DateTime created;
   bool hostPlayerGoesFirst;
   bool open;
+  bool declined;
+  String? invitedUid;
   bool? hostRematch;
   bool? addedRematch;
 
@@ -31,6 +33,8 @@ class GameModel {
     this.created,
     this.hostPlayerGoesFirst,
     this.open,
+    this.declined,
+    this.invitedUid,
     this.hostRematch,
     this.addedRematch,
   );
@@ -82,6 +86,8 @@ class GameModel {
       DateTime.parse(data['created']),
       data['hostPlayerGoesFirst'],
       data['open'],
+      data['declined'],
+      data['invitedUid'],
       data['hostRematch'],
       data['addedRematch'],
     );
@@ -119,4 +125,14 @@ class MultiplayerNames {
       );
     }
   }
+}
+
+GameModel? containsFriend(List<GameModel> games, String friendId) {
+  for (var game in games) {
+    if (game.hostPlayerUid == friendId) {
+      return game;
+    }
+  }
+
+  return null;
 }

@@ -4,16 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:tic_tac_advanced/widgets/spinning_icon.dart';
 
 import '../helpers/custom_dialog.dart';
-import '../models/app_user.dart';
 import '../models/game_model.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
 import '../widgets/background_gradient.dart';
 import '../widgets/game_app_bar.dart';
+import '../widgets/spinning_icon.dart';
 
 class OnlineScreen extends StatefulWidget {
   static const routeName = '/online';
@@ -79,60 +78,6 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     trailing: ElevatedButton(
                       onPressed: () {
                         gameProvider.joinGame(context, games[index]);
-                      },
-                      child: const Text('Play'),
-                    ),
-                  ),
-                ),
-        );
-      },
-    );
-  }
-
-  Widget _friendStream(BuildContext context, GameProvider gameProvider,
-      UserProvider userProvider) {
-    return StreamBuilder(
-      stream: userProvider.invitedStream,
-      builder: (ctx, AsyncSnapshot<List<Invited>> streamSnapshot) {
-        if (streamSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        final invited = streamSnapshot.data!;
-        return MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: invited.isEmpty
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SpinningIcon(
-                      icon: Icon(
-                        Icons.sentiment_dissatisfied,
-                        size: 60,
-                      ),
-                    ),
-                    Text(
-                      'No games yet',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                )
-              : ListView.builder(
-                  itemCount: invited.length,
-                  itemBuilder: (ctx, index) => ListTile(
-                    title: Text(
-                      invited[index].inviteeUsername,
-                    ),
-                    subtitle: Text(
-                        DateFormat('h:mm a').format(invited[index].created)),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        gameProvider.joinInvitedGame(context, invited[index]);
                       },
                       child: const Text('Play'),
                     ),
@@ -218,23 +163,6 @@ class _OnlineScreenState extends State<OnlineScreen> {
     );
   }
 
-  Widget _friendTab(BuildContext context, gameProvider, userProvider) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 5,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).dialogBackgroundColor,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        border: Border.all(
-          color: Colors.black54,
-        ),
-      ),
-      child: _friendStream(context, gameProvider, userProvider),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final _gameProvider = Provider.of<GameProvider>(context, listen: false);
@@ -269,7 +197,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                   thickness: 1.5,
                 ),
                 DefaultTabController(
-                  length: 2,
+                  length: 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -300,12 +228,6 @@ class _OnlineScreenState extends State<OnlineScreen> {
                               child: const Tab(text: 'All games'),
                             ),
                           ),
-                          FittedBox(
-                            child: SizedBox(
-                              height: _deviceSize.height * 0.08,
-                              child: const Tab(text: 'Friend games'),
-                            ),
-                          ),
                         ],
                       ),
                       SizedBox(
@@ -313,7 +235,6 @@ class _OnlineScreenState extends State<OnlineScreen> {
                         child: TabBarView(
                           children: [
                             _allTab(context, _gameProvider, _userProvider),
-                            _friendTab(context, _gameProvider, _userProvider),
                           ],
                         ),
                       ),

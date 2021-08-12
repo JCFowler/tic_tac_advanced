@@ -162,19 +162,44 @@ class FireService {
     });
   }
 
-  // ###### GAMES:
-  Future<DocumentReference<Map<String, dynamic>>> createHostGame(
-      String uid, String username) {
-    return _firestore.collection(gamesCol).add({
+  Stream<List<GameModel>> openPrivateGameStream(String uid) {
+    var date =
+        DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String();
+
+    return _firestore
+        .collection(gamesCol)
+        .where('invitedUid', isEqualTo: uid)
+        .where('created', isGreaterThan: date)
+        .orderBy('created', descending: true)
+        .limit(10)
+        .snapshots()
+        .map((event) {
+      List<GameModel> result =
+          event.docs.map((doc) => GameModel.docToObject(doc)!).toList();
+
+      return result;
+    });
+  }
+
+  Future<String> hostGame(
+    String uid,
+    String username, {
+    String? friendUid,
+  }) async {
+    var doc = await _firestore.collection(gamesCol).add({
       'hostPlayerUid': uid,
       'hostPlayer': username,
       'created': DateTime.now().toIso8601String(),
       'addedPlayerUid': null,
       'addedPlayer': null,
-      'open': true,
       'hostPlayerGoesFirst': Random().nextBool(),
       'gameMarks': json.encode(_convertGameMarksToJson(baseGameMarks)),
+      'declined': false,
+      'open': friendUid == null ? true : false,
+      'invitedUid': friendUid,
     });
+
+    return doc.id;
   }
 
   Future<void> joinGame(String docId, String uid, String username) {
@@ -182,83 +207,15 @@ class FireService {
       'addedPlayer': username,
       'addedPlayerUid': uid,
       'open': false,
+      'invitedUid': null,
     });
   }
 
-  Future<String> inviteFriendGame(AppUser user, AppUser friend) async {
-    var date = DateTime.now().toIso8601String();
-
-    String gameId = '';
-
-    await _firestore.runTransaction((transaction) async {
-      var gameRef = _firestore.collection(gamesCol).doc();
-      var userRef = _firestore.collection(usersCol).doc(user.uid);
-      var friendRef = _firestore.collection(usersCol).doc(friend.uid);
-
-      transaction.set(gameRef, {
-        'hostPlayerUid': user.uid,
-        'hostPlayer': user.username,
-        'created': date,
-        'addedPlayerUid': null,
-        'addedPlayer': null,
-        'open': false,
-        'hostPlayerGoesFirst': Random().nextBool(),
-        'gameMarks': json.encode(_convertGameMarksToJson(baseGameMarks)),
-      });
-
-      gameId = gameRef.id;
-
-      transaction.update(userRef, {
-        "createdGame": {
-          'gameId': gameId,
-          'inviteeUsername': user.username,
-          'created': date,
-        }
-      });
-
-      transaction.update(friendRef, {
-        "invited": FieldValue.arrayUnion([
-          {
-            'gameId': gameId,
-            'inviteeUsername': user.username,
-            'created': date,
-          }
-        ])
-      });
+  declinePrivateGame(String gameId) async {
+    await _firestore.collection(gamesCol).doc(gameId).update({
+      'declined': true,
+      'invitedUid': null,
     });
-
-    return gameId;
-  }
-
-  deleteInvite(AppUser user, String friendUid) {
-    deleteGame(user.uid).then((_) async {
-      if (user.createdGame != null) {
-        await removeInvitedGame(user.createdGame!, friendUid);
-      }
-    });
-  }
-
-  removeInvitedGame(Invited game, String friendUid) async {
-    await _firestore.collection(usersCol).doc(friendUid).update({
-      "invited": FieldValue.arrayRemove(
-        [
-          Invited.toJson(
-            game,
-          )
-        ],
-      )
-    });
-  }
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> joinInvitedGame(
-      String docId, String uid, String username) async {
-    await _firestore.collection(gamesCol).doc(docId).update({
-      'addedPlayer': username,
-      'addedPlayerUid': uid,
-      'open': false,
-    });
-
-    return _firestore.collection(gamesCol).doc(docId).get();
   }
 
   Future<void> leaveGame(String docId, String uid, bool autoOpen) async {

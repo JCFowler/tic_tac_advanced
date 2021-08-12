@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../models/app_user.dart';
 import '../models/constants.dart';
@@ -675,6 +676,11 @@ showFriendsDialog(
   bool found = false;
   bool closed = false; // This is used to check if dialog has been closed.
 
+  Stream<List<AppUser>> fStream = userProvider.friendStream;
+  Stream<List<GameModel>> pStream = gameProvider.privateGameStream!;
+
+  var combinedStream = CombineLatestStream.list([fStream, pStream]);
+
   return _basicDialog(
     context,
     barrierDismissible: true,
@@ -804,14 +810,15 @@ showFriendsDialog(
               const Divider(),
               Expanded(
                 child: StreamBuilder(
-                  stream: userProvider.friendStream,
-                  builder: (ctx, AsyncSnapshot<List<AppUser>> snapshot) {
+                  stream: combinedStream,
+                  builder: (ctx, AsyncSnapshot<List<List<Object>>> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(),
                       );
                     }
-                    final friends = snapshot.data!;
+                    final friends = snapshot.data![0] as List<AppUser>;
+                    final privateGames = snapshot.data![1] as List<GameModel>;
 
                     if (friends.isEmpty) {
                       return const Center(
@@ -821,6 +828,8 @@ showFriendsDialog(
                     return ListView.builder(
                       itemCount: friends.length,
                       itemBuilder: (ctx, index) {
+                        var invitedGame =
+                            containsFriend(privateGames, friends[index].uid);
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
@@ -839,8 +848,18 @@ showFriendsDialog(
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                friends[index].invitedGame == null
-                                    ? OutlinedButton(
+                                invitedGame != null
+                                    ? ElevatedButton(
+                                        onPressed: () => gameProvider.joinGame(
+                                            context, invitedGame),
+                                        child: const Text(
+                                          'Join',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      )
+                                    : OutlinedButton(
                                         style: OutlinedButton.styleFrom(
                                           side: const BorderSide(
                                             width: 1,
@@ -848,26 +867,13 @@ showFriendsDialog(
                                           ),
                                         ),
                                         onPressed: () {
-                                          gameProvider.hostInvitedGame(
+                                          gameProvider.hostGame(
                                             context,
-                                            friends[index],
+                                            friend: friends[index],
                                           );
                                         },
                                         child: const Text(
                                           'Invite',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      )
-                                    : ElevatedButton(
-                                        onPressed: () =>
-                                            gameProvider.joinInvitedGame(
-                                          context,
-                                          friends[index].invitedGame!,
-                                        ),
-                                        child: const Text(
-                                          'Join',
                                           style: TextStyle(
                                             fontSize: 16,
                                           ),

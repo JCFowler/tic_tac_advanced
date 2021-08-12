@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../models/app_user.dart';
+import '../main.dart';
+import '../models/game_model.dart';
+import '../providers/game_provider.dart';
 import 'loading_bar.dart';
 
 class InviteSnackBarLayout extends StatelessWidget {
-  final Invited invited;
+  final GameModel game;
   final int? milliseconds;
+  final bool reset;
 
   const InviteSnackBarLayout(
-    this.invited, {
+    this.game, {
     this.milliseconds,
+    this.reset = false,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var gameProvider = Provider.of<GameProvider>(context, listen: false);
+
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       height: 100,
@@ -24,10 +31,10 @@ class InviteSnackBarLayout extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.person),
+                const Icon(Icons.person),
                 FittedBox(
                   child: Text(
-                    '${invited.inviteeUsername} Invited you.',
+                    '${game.hostPlayer} Invited you.',
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 18,
@@ -50,6 +57,7 @@ class InviteSnackBarLayout extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
+                    gameProvider.declinePrivateGame(game.id);
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   },
                 ),
@@ -63,13 +71,19 @@ class InviteSnackBarLayout extends StatelessWidget {
                       ),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    // gameProvider.joinGame(ctx, game);
+                  },
                 ),
               ],
             ),
           ),
           if (milliseconds != null)
-            LoadingBar(milliseconds!, hideSnackBar: true),
+            LoadingBar(
+              milliseconds!,
+              hideSnackBar: true,
+              reset: reset,
+            ),
         ],
       ),
     );

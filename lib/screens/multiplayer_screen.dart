@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/game_provider.dart';
 
 import '../models/constants.dart';
 import '../providers/user_provider.dart';
@@ -18,8 +19,13 @@ class MultiplayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
     if (userProvider.uid == '') {
-      userProvider.createAnonymousUser();
+      userProvider.createAnonymousUser().then((userId) {
+        if (userId != null) {
+          gameProvider.startPrivateGameStream(userId);
+        }
+      });
     }
 
     return Scaffold(

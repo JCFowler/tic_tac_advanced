@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../models/app_user.dart';
+import '../models/game_model.dart';
 import '../widgets/invite_snack_bar.dart';
 
-showInviteSnackBar(Invited invited, {milliseconds = 5000}) {
+hideSnackBar() {
+  var currentContext = globalScaffoldKey.currentState!.context;
+
+  ScaffoldMessenger.of(currentContext).hideCurrentSnackBar();
+}
+
+showInviteSnackBar(
+  GameModel game, {
+  int milliseconds = 10000,
+  bool reset = false,
+}) {
   try {
     var currentContext = globalScaffoldKey.currentState!.context;
 
@@ -20,8 +30,9 @@ showInviteSnackBar(Invited invited, {milliseconds = 5000}) {
         duration: Duration(milliseconds: milliseconds),
         padding: const EdgeInsets.only(left: 10, right: 10),
         content: InviteSnackBarLayout(
-          invited,
+          game,
           milliseconds: milliseconds,
+          reset: reset,
         ),
       ),
     );

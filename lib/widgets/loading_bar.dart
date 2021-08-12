@@ -7,10 +7,12 @@ const tickerAmount = 10;
 class LoadingBar extends StatefulWidget {
   final int milliseconds;
   final bool hideSnackBar;
+  final bool reset;
 
   const LoadingBar(
     this.milliseconds, {
     this.hideSnackBar = false,
+    this.reset = false,
     Key? key,
   }) : super(key: key);
 
@@ -25,6 +27,11 @@ int ticks = 0;
 class _LoadingBarState extends State<LoadingBar> {
   @override
   void initState() {
+    if (widget.reset) {
+      percentage = 0.0;
+      ticks = 0;
+    }
+
     timer =
         Timer.periodic(const Duration(milliseconds: tickerAmount), (Timer t) {
       if (!mounted) {

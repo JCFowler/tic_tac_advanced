@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../helpers/ai_helper.dart';
 import '../helpers/custom_dialog.dart';
+import '../helpers/snack_bar_helper.dart';
 import '../helpers/timeout.dart';
 import '../models/app_user.dart';
 import '../models/constants.dart';
@@ -54,6 +55,8 @@ class GameProvider with ChangeNotifier {
   var _gameDoc = '';
 
   bool _gameTied = false;
+
+  Stream<List<GameModel>>? privateGameStream;
 
   int get selectedNumber {
     return _selectedNumber;
@@ -170,6 +173,21 @@ class GameProvider with ChangeNotifier {
         }
       }
     });
+  }
+
+  startPrivateGameStream(String userId) {
+    privateGameStream = _fireService.openPrivateGameStream(userId);
+    _fireService.openPrivateGameStream(userId).listen((games) {
+      if (games.isNotEmpty) {
+        showInviteSnackBar(games[0], reset: true);
+      } else {
+        hideSnackBar();
+      }
+    });
+  }
+
+  declinePrivateGame(String gameId) {
+    _fireService.declinePrivateGame(gameId);
   }
 
   void endGameStream() {
@@ -515,87 +533,45 @@ class GameProvider with ChangeNotifier {
     });
   }
 
-  hostGame(BuildContext context, {popGameScreen = false}) {
-    showLoadingDialog(context, 'Waiting for second player...').then((result) {
+  hostGame(
+    BuildContext context, {
+    AppUser? friend,
+    bool popGameScreen = false,
+  }) {
+    showLoadingDialog(
+      context,
+      friend != null
+          ? 'Waiting for ${friend.username}...'
+          : 'Waiting for second player...',
+    ).then((result) {
       if (result == 'cancel') {
         _fireService.deleteGame(uid);
       }
     });
-    _fireService.createHostGame(uid, username).then(
-      (doc) {
-        setGameDoc(doc.id);
+    _fireService.hostGame(uid, username, friendUid: friend?.uid).then(
+      (newGameId) {
+        setGameDoc(newGameId);
         _fireService
-            .gameMatchStream(doc.id)
+            .gameMatchStream(newGameId)
             .firstWhere((gameModel) =>
-                gameModel != null && gameModel.addedPlayer != null)
+                gameModel != null &&
+                (gameModel.addedPlayer != null || gameModel.declined))
             .then(
           (gameModel) {
-            setStartingPlayer(
-              gameModel!.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
-            );
-            Navigator.of(context).pop();
-            if (popGameScreen) Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(GameScreen.routeName);
+            if (gameModel!.declined) {
+              Navigator.of(context).pop();
+            } else {
+              setStartingPlayer(
+                gameModel.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
+              );
+              Navigator.of(context).pop();
+              if (popGameScreen) Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(GameScreen.routeName);
+            }
           },
         );
       },
     );
-  }
-
-  hostInvitedGame(BuildContext context, AppUser friend) {
-    showLoadingDialog(
-      context,
-      'Waiting for ${friend.username}...',
-    ).then((result) {
-      if (result == 'cancel') {
-        _fireService.deleteInvite(
-          user!,
-          friend.uid,
-        );
-      }
-    });
-    _fireService.inviteFriendGame(user!, friend).then(
-      (gameId) {
-        setGameDoc(gameId);
-        _fireService
-            .gameMatchStream(gameId)
-            .firstWhere((gameModel) =>
-                gameModel != null && gameModel.addedPlayer != null)
-            .then(
-          (gameModel) {
-            setStartingPlayer(
-              gameModel!.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
-            );
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(GameScreen.routeName);
-          },
-        );
-      },
-    );
-  }
-
-  joinInvitedGame(BuildContext context, Invited invited) {
-    showLoadingDialog(context, 'Joining ${invited.inviteeUsername}\'s game...');
-
-    _fireService.joinInvitedGame(invited.gameId, uid, username).then((doc) {
-      _fireService.removeInvitedGame(invited, uid);
-      setGameDoc(invited.gameId);
-      setStartingPlayer(
-        doc.data()!['hostPlayerGoesFirst'] ? Player.Player2 : Player.Player1,
-      );
-      Navigator.of(context).pop();
-      Navigator.of(context).pushNamed(GameScreen.routeName);
-    }).catchError((error) {
-      Navigator.of(context).pop();
-      _fireService.removeInvitedGame(invited, uid);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        duration: Duration(seconds: 2),
-        content: Text(
-          'Host ended game.',
-          textAlign: TextAlign.center,
-        ),
-      ));
-    });
   }
 
   Future<void> leaveOnlineGame({bool autoOpen = true}) async {

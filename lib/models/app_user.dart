@@ -41,7 +41,6 @@ class AppUser {
   String username;
   List<AppUser> friends;
   List<Invited> invited;
-  Invited? createdGame;
   Invited? invitedGame;
 
   AppUser(
@@ -49,7 +48,6 @@ class AppUser {
     this.username,
     this.friends,
     this.invited, {
-    this.createdGame,
     this.invitedGame,
   });
 
@@ -114,10 +112,6 @@ class AppUser {
         }
 
         AppUser user = AppUser(doc.id, data['username'], frs, invs);
-
-        if (data['createdGame'] != null) {
-          user.createdGame = Invited.toObject(data['createdGame']);
-        }
 
         return user;
       }
