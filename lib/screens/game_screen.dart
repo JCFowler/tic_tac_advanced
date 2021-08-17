@@ -35,7 +35,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     if (result != null && result) {
-      Provider.of<GameProvider>(context, listen: false).leaveOnlineGame();
+      Provider.of<GameProvider>(context, listen: false).leaveGame();
     }
 
     return result ?? false;
@@ -69,7 +69,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       buildContext: context,
     );
 
-    if (gameProvider.gameType == GameType.Online) {
+    if (gameProvider.gameDoc.isNotEmpty) {
       gameProvider.startGameStream();
     }
   }

@@ -16,7 +16,7 @@ import 'screens/multiplayer_screen.dart';
 import 'screens/online_screen.dart';
 import 'screens/single_player_screen.dart';
 
-final globalScaffoldKey = GlobalKey<ScaffoldState>();
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +60,7 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<LocaleProvider>(
         builder: (ctx, localeProvider, _) => MaterialApp(
+          navigatorKey: navigatorKey,
           localizationsDelegates: const [
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
@@ -106,7 +107,6 @@ class MyApp extends StatelessWidget {
           },
           builder: (context, child) {
             return Scaffold(
-              key: globalScaffoldKey,
               body: child,
             );
           },

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/snack_bar_helper.dart';
 import '../main.dart';
+import '../models/constants.dart';
 import '../models/game_model.dart';
 import '../providers/game_provider.dart';
 import 'loading_bar.dart';
@@ -23,7 +25,13 @@ class InviteSnackBarLayout extends StatelessWidget {
     var gameProvider = Provider.of<GameProvider>(context, listen: false);
 
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
+      ),
       height: 100,
       child: Column(
         children: [
@@ -58,7 +66,7 @@ class InviteSnackBarLayout extends StatelessWidget {
                   ),
                   onPressed: () {
                     gameProvider.declinePrivateGame(game.id);
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    hideSnackBar();
                   },
                 ),
                 TextButton(
@@ -71,8 +79,12 @@ class InviteSnackBarLayout extends StatelessWidget {
                       ),
                     ),
                   ),
-                  onPressed: () {
-                    // gameProvider.joinGame(ctx, game);
+                  onPressed: () async {
+                    if (gameProvider.gameDoc.isNotEmpty ||
+                        gameProvider.gameType != GameType.None) {
+                      await gameProvider.leaveGame(popScreen: true);
+                    }
+                    gameProvider.joinGame(navigatorKey.currentContext!, game);
                   },
                 ),
               ],

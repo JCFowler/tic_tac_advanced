@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/ai_helper.dart';
@@ -25,6 +26,11 @@ class GameProvider with ChangeNotifier {
   GameModel? _multiplayerData;
   MultiplayerNames? _multiplayerNames;
 
+  late final AudioCache _audioCache = AudioCache(
+    prefix: 'assets/audio/',
+    fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
+  )..loadAll(['move.wav', 'win.wav', 'win-long.wav']);
+
   AnimationController? _numberController;
   BuildContext? _buildContext;
 
@@ -48,7 +54,7 @@ class GameProvider with ChangeNotifier {
   final Map<int, Mark> _gameMarks = {...baseGameMarks};
   List<int> _winningLine = [];
   var _lastMovePosition = -1;
-  var _gameType = GameType.Local;
+  var _gameType = GameType.None;
 
   var _startingPlayer = Random().nextBool() ? Player.Player1 : Player.Player2;
 
@@ -153,7 +159,7 @@ class GameProvider with ChangeNotifier {
                 .then((result) {
               if (result == 'cancel') {
                 _waitingDiagOpen = false;
-                leaveOnlineGame();
+                leaveGame();
                 Navigator.of(_buildContext!).pop();
               }
             });
@@ -253,6 +259,7 @@ class GameProvider with ChangeNotifier {
       setTimeout(() {
         changeSelectedNumber(lastMove.number);
         setTimeout(() {
+          _audioCache.play('move.wav');
           _lastMovePosition = lastMove.position;
           _gameMarks[lastMove.position] = Mark(_selectedNumber, Player.Player2);
 
@@ -281,6 +288,7 @@ class GameProvider with ChangeNotifier {
     }
 
     if (_selectedNumber != -1 && !gameOver) {
+      _audioCache.play('move.wav');
       if (_gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] = Mark(_selectedNumber, _player);
         final gameFinished = checkForWinningLine();
@@ -288,7 +296,7 @@ class GameProvider with ChangeNotifier {
 
         final lastMove = LastMove(uid, position, _selectedNumber);
 
-        if (gameType == GameType.Online) {
+        if (gameDoc.isNotEmpty) {
           _fireService.addMark(gameDoc, uid, username, gameMarks, lastMove);
         }
 
@@ -366,6 +374,7 @@ class GameProvider with ChangeNotifier {
           increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
 
           notifyListeners();
+          _audioCache.play('win-long.wav', mode: PlayerMode.LOW_LATENCY);
           setTimeout(() {
             _showDialog(
               'Game finished!',
@@ -416,7 +425,7 @@ class GameProvider with ChangeNotifier {
   }
 
   void _showDialog(String title, {String? content, yesText = 'Yes'}) {
-    if (_gameType == GameType.Online) {
+    if (gameDoc.isNotEmpty) {
       showOnlineRematchDialog(
         _buildContext!,
         this,
@@ -523,13 +532,7 @@ class GameProvider with ChangeNotifier {
       Navigator.of(context).pushNamed(GameScreen.routeName);
     }).catchError((error) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        duration: Duration(seconds: 2),
-        content: Text(
-          'Host ended game.',
-          textAlign: TextAlign.center,
-        ),
-      ));
+      showSnackBar('Host ended game.');
     });
   }
 
@@ -559,6 +562,7 @@ class GameProvider with ChangeNotifier {
             .then(
           (gameModel) {
             if (gameModel!.declined) {
+              showSnackBar('Game invite was declined.', textColor: Colors.red);
               Navigator.of(context).pop();
             } else {
               setStartingPlayer(
@@ -574,15 +578,25 @@ class GameProvider with ChangeNotifier {
     );
   }
 
-  Future<void> leaveOnlineGame({bool autoOpen = true}) async {
-    if (gameType == GameType.Online) {
+  Future<void> leaveGame({
+    bool autoOpen = true,
+    bool popScreen = false,
+  }) async {
+    if (gameDoc.isNotEmpty) {
       endGameStream();
       gameRestart();
       if (multiplayerData == null || multiplayerData!.addedPlayer == null) {
-        return _fireService.deleteGame(uid);
+        await _fireService.deleteGame(uid);
       } else {
-        return _fireService.leaveGame(gameDoc, uid, autoOpen);
+        await _fireService.leaveGame(gameDoc, uid, autoOpen);
       }
+      _gameDoc = '';
+    }
+
+    _gameType = GameType.None;
+
+    if (popScreen) {
+      Navigator.of(_buildContext!).pop();
     }
   }
 }

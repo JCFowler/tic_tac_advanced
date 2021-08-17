@@ -500,7 +500,7 @@ List<Widget> _getRematchButtons(
           Navigator.popUntil(context, (route) {
             return count++ == 2;
           });
-          game.leaveOnlineGame(autoOpen: false);
+          game.leaveGame(autoOpen: false);
         },
       ),
     );

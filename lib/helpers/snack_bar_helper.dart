@@ -5,9 +5,41 @@ import '../models/game_model.dart';
 import '../widgets/invite_snack_bar.dart';
 
 hideSnackBar() {
-  var currentContext = globalScaffoldKey.currentState!.context;
+  var currentContext = navigatorKey.currentState!.context;
 
   ScaffoldMessenger.of(currentContext).hideCurrentSnackBar();
+}
+
+showSnackBar(String text, {Color textColor = Colors.black}) {
+  var currentContext = navigatorKey.currentState!.context;
+
+  ScaffoldMessenger.of(currentContext).hideCurrentSnackBar();
+  ScaffoldMessenger.of(currentContext).showSnackBar(
+    SnackBar(
+      backgroundColor: Colors.transparent,
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      content: Container(
+        height: 40,
+        padding: EdgeInsets.zero,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Theme.of(currentContext).scaffoldBackgroundColor,
+        ),
+        child: Center(
+          child: FittedBox(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 showInviteSnackBar(
@@ -16,7 +48,7 @@ showInviteSnackBar(
   bool reset = false,
 }) {
   try {
-    var currentContext = globalScaffoldKey.currentState!.context;
+    var currentContext = navigatorKey.currentState!.context;
 
     ScaffoldMessenger.of(currentContext).hideCurrentSnackBar();
     ScaffoldMessenger.of(currentContext).showSnackBar(

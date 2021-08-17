@@ -2,7 +2,7 @@
     package="app.elevatedsoft.tic_tac_advanced">
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
    <application
-        android:label="tic_tac_advanced"
+        android:label="Tic Tac Advanced"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tic_tac_advanced/helpers/snack_bar_helper.dart';
 
 const tickerAmount = 10;
 
@@ -43,7 +44,7 @@ class _LoadingBarState extends State<LoadingBar> {
       });
       if ((ticks * tickerAmount) >= widget.milliseconds) {
         if (widget.hideSnackBar) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          hideSnackBar();
         }
 
         t.cancel();
