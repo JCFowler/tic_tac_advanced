@@ -16,6 +16,7 @@ import '../widgets/primary_button.dart';
 import '../widgets/spinning_icon.dart';
 import '../widgets/waiting_text.dart';
 import 'timeout.dart';
+import 'translate_helper.dart';
 
 Future<T?> _basicDialog<T extends Object?>(
   BuildContext context, {
@@ -128,7 +129,7 @@ Widget _basicHeader(BuildContext context, String title) {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              translate(title, context),
+              translate(title),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
@@ -178,14 +179,17 @@ Future<dynamic> showChangeUsernameDialog(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const FittedBox(
-                child: Padding(
-                  padding: EdgeInsets.only(left: 10),
-                  child: Text(
-                    'Change username',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Text(
+                      translate('changeUsername'),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -216,21 +220,21 @@ Future<dynamic> showChangeUsernameDialog(
           child: Form(
             key: _form,
             child: SizedBox(
-              height: 80,
+              height: 100,
               child: TextFormField(
                   onSaved: (value) => enteredText = value,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
+                  decoration: InputDecoration(
+                    labelText: translate('username'),
                     errorMaxLines: 2,
                   ),
                   maxLength: 12,
                   maxLines: 1,
                   validator: (value) {
                     if (value == null || value.length <= 3) {
-                      return 'Username has to be 4 or more characters.';
+                      return translate('usernameMoreThanFour');
                     }
                     if (duplicate) {
-                      return 'Username is taken.';
+                      return translate('usernameTaken');
                     }
                     return null;
                   }),
@@ -239,7 +243,7 @@ Future<dynamic> showChangeUsernameDialog(
         ),
         StatefulBuilder(builder: (context, setState) {
           return _bottomSubmitButton(
-            text: 'Finish',
+            text: translate('finished'),
             loading: loading,
             onPressed: () async {
               duplicate = false;
@@ -274,9 +278,12 @@ Future<bool?> showAlertDialog(
   String? content,
   bool barrierDismissible = true,
   bool singleButton = false,
-  String yesBtnText = 'Yes',
-  String noBtnText = 'No',
+  String yesBtnText = 'yes',
+  String noBtnText = 'no',
 }) {
+  yesBtnText = translate(yesBtnText);
+  noBtnText = translate(noBtnText);
+
   return _basicDialog(
     context,
     barrierDismissible: barrierDismissible,
@@ -421,10 +428,11 @@ List<Widget> _getRematchButtons(
               child: game.multiplayerData!.addedPlayer != null
                   ? player1Answer != null
                       ? WaitingText(
-                          'Waiting on ${game.getPlayerUsername(Player.Player2)}',
+                          translate('waitingFor',
+                              args: game.getPlayerUsername(Player.Player2)),
                         )
                       : Text(
-                          'Rematch?',
+                          translate('rematch'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Theme.of(context).accentColor,
@@ -432,7 +440,7 @@ List<Widget> _getRematchButtons(
                           ),
                         )
                   : Text(
-                      'Player quit...',
+                      translate('playerQuit'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Theme.of(context).accentColor,
@@ -447,7 +455,7 @@ List<Widget> _getRematchButtons(
   } else if (player1Answer != false) {
     widgets.add(
       PrimaryButton(
-        'Host new game',
+        translate('hostNewGame'),
         onPressed: () {
           Navigator.pop(context);
           game.hostGame(context, popGameScreen: true);
@@ -462,14 +470,14 @@ List<Widget> _getRematchButtons(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           PrimaryButton(
-            'No',
+            translate('no'),
             expanded: true,
             backgroundColor: Theme.of(context).errorColor,
             onPressed: () => game.updateRematch(false),
           ),
           const SizedBox(width: 10),
           PrimaryButton(
-            'Yes',
+            translate('yes'),
             expanded: true,
             onPressed: () {
               bool bothYes = false;
@@ -481,8 +489,6 @@ List<Widget> _getRematchButtons(
               game.updateRematch(true).then((_) {
                 if (bothYes) {
                   game.restartOnlineGame();
-                  // Navigator.pop(context);
-                  // game.restartOnlineGame();
                 }
               });
             },
@@ -493,7 +499,7 @@ List<Widget> _getRematchButtons(
   } else {
     widgets.add(
       PrimaryButton(
-        'Quit',
+        translate('quit'),
         backgroundColor: Theme.of(context).errorColor,
         onPressed: () {
           var count = 0;
@@ -514,9 +520,7 @@ Future<dynamic> showOnlineRematchDialog(
   GameModel model, {
   required bool won,
   required Stream<GameModel?> stream,
-  bool barrierDismissible = true, // CHANGE
-  String yesBtn = 'Yes',
-  String noBtn = 'No',
+  bool barrierDismissible = false,
 }) {
   return _basicDialog(
     context,
@@ -528,7 +532,7 @@ Future<dynamic> showOnlineRematchDialog(
           children: [
             _getFaceIcon(context, won),
             Text(
-              game.player == Player.Player1 ? 'Won' : 'Lost',
+              translate(game.player == Player.Player1 ? 'won' : 'lost'),
               style: TextStyle(
                 fontSize: 30,
                 color: Theme.of(context).accentColor,
@@ -649,7 +653,7 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
         ),
         const SizedBox(height: 40),
         _bottomSubmitButton(
-          text: 'Cancel',
+          text: translate('cancel'),
           onPressed: () {
             Navigator.pop(context, 'cancel');
           },
@@ -689,7 +693,7 @@ showFriendsDialog(
       height: height,
       child: Column(
         children: [
-          _basicHeader(context, 'Friends'),
+          _basicHeader(context, 'friends'),
           Divider(
             thickness: 1.5,
             color: Theme.of(context).primaryColor,
@@ -709,19 +713,19 @@ showFriendsDialog(
                         height: 100,
                         child: TextFormField(
                           onSaved: (value) => enteredText = value,
-                          decoration: const InputDecoration(
-                            hintText: 'Friend\'s username',
-                            hintStyle: TextStyle(fontSize: 12),
-                            labelText: 'Add new friend',
+                          decoration: InputDecoration(
+                            hintText: translate('friendsUsername'),
+                            hintStyle: const TextStyle(fontSize: 12),
+                            labelText: translate('addNewFriend'),
                             errorMaxLines: 2,
                           ),
                           maxLength: 12,
                           maxLines: 1,
                           validator: (value) {
                             if (value == null || value.length <= 3) {
-                              return 'Username has to be at least 4 characters.';
+                              return translate('usernameMoreThanFour');
                             } else if (noUserFound) {
-                              return 'Couldn\'t find $value';
+                              return translate('couldntFind', args: value);
                             }
                             return null;
                           },
@@ -821,8 +825,8 @@ showFriendsDialog(
                     final privateGames = snapshot.data![1] as List<GameModel>;
 
                     if (friends.isEmpty) {
-                      return const Center(
-                        child: Text('No friends yet...'),
+                      return Center(
+                        child: Text(translate('noFriends')),
                       );
                     }
                     return ListView.builder(
@@ -852,9 +856,9 @@ showFriendsDialog(
                                     ? ElevatedButton(
                                         onPressed: () => gameProvider.joinGame(
                                             context, invitedGame),
-                                        child: const Text(
-                                          'Join',
-                                          style: TextStyle(
+                                        child: Text(
+                                          translate('join'),
+                                          style: const TextStyle(
                                             fontSize: 16,
                                           ),
                                         ),
@@ -872,9 +876,9 @@ showFriendsDialog(
                                             friend: friends[index],
                                           );
                                         },
-                                        child: const Text(
-                                          'Invite',
-                                          style: TextStyle(
+                                        child: Text(
+                                          translate('invite'),
+                                          style: const TextStyle(
                                             fontSize: 16,
                                           ),
                                         ),
@@ -889,9 +893,10 @@ showFriendsDialog(
                                         onPressed: () {
                                           showAlertDialog(
                                             context,
-                                            'Remove friend?',
-                                            content:
-                                                'Are you sure you want to remove ${friends[index].username}?',
+                                            translate('removeFriend'),
+                                            content: translate(
+                                                'areYouSureToRemove',
+                                                args: friends[index].username),
                                           ).then((value) {
                                             if (value != null && value) {
                                               fireService.removeFriend(
@@ -955,9 +960,9 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                 color: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 5),
-              const Text(
-                'Online Username',
-                style: TextStyle(
+              Text(
+                translate('onlineUsername'),
+                style: const TextStyle(
                   fontSize: 10,
                   color: Colors.black87,
                 ),
@@ -977,23 +982,23 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                     child: Form(
                       key: _form,
                       child: SizedBox(
-                        height: 100,
+                        height: 110,
                         child: TextFormField(
                           onSaved: (value) => enteredText = value,
-                          decoration: const InputDecoration(
-                            hintText: 'New username',
-                            hintStyle: TextStyle(fontSize: 12),
-                            labelText: 'Change Username',
+                          decoration: InputDecoration(
+                            hintText: translate('newUsername'),
+                            hintStyle: const TextStyle(fontSize: 12),
+                            labelText: translate('changeUsername'),
                             errorMaxLines: 2,
                           ),
                           maxLength: 12,
                           maxLines: 1,
                           validator: (value) {
                             if (value == null || value.length <= 3) {
-                              return 'Username has to be 4 or more characters.';
+                              return translate('usernameMoreThanFour');
                             }
                             if (duplicate) {
-                              return 'Username is taken.';
+                              return translate('usernameTaken');
                             }
                             return null;
                           },
@@ -1077,7 +1082,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Language',
+                    translate('language'),
                     style: TextStyle(
                       fontSize: 18,
                       color: Theme.of(context).accentColor,

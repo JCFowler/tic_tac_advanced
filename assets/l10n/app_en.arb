@@ -10,15 +10,81 @@
     "onlinePlay": "Online Play",
     "online": "Online",
     "wins": "Wins",
+    "noGamesYet": "No games yet",
+    "friend": "Friend",
+    "friends": "Friends",
+    "hostGame": "Host Game",
+    "allGames": "All Games",
+    "anyone": "Anyone",
+    "addNewFriend": "Add new friend",
+    "invite": "Invite",
+    "join": "Join",
+    "removeFriend": "Remove Friend?",
+    "no": "No",
+    "yes": "Yes",
+    "exitGame": "Exit Game",
+    "areYouSureToQuit": "Are you sure you want to quit the game?",
+    "gameFinished": "Game finished!",
+    "playAgain": "Play again?",
+    "changeUsername": "Change username",
+    "newUsername": "New username",
+    "language": "Language",
+    "onlineUsername": "Online username",
+    "friendsUsername": "Friend's username",
+    "decline": "Decline",
+    "cancel": "Cancel",
+    "gameInviteDeclined": "Game invite was declined",
+    "joiningGame": "Joining game...",
+    "won": "Won",
+    "lost": "Lost",
+    "rematch": "Rematch?",
+    "quit": "Quit",
+    "hostNewGame": "Host new game",
+    "waitingForSecondPlayer": "Waiting for second player...",
+    "play": "Play",
+    "username": "Username",
+    "usernameMoreThanFour": "Username has to be at least 4 characters.",
+    "usernameTaken": "Username is taken.",
+    "finished": "Finished",
+    "playerQuit": "Player quit...",
+    "noFriends": "No friends yet...",
+    "noOne": "No one..",
+    "gameTied": "Game Tied",
+    "bluePlayerWon": "Blue player won!",
+    "redPlayerWon": "Red player won!",
+    "hostEndedGame": "Host ended game",
+    
 
-
-
-     "hello": "Hello {username}",
-     "@hello": {
-         "placeholders": {
-             "username": {
-                 "type": "String"
-             }
-         }
-     }
+    "areYouSureToRemove": "Are you sure you want to remove {username}?",
+    "@areYouSureToRemove": {
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "invitedYou": "{username} Invited you",
+    "@invitedYou": {
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "waitingFor": "Waiting for {username}",
+    "@waitingFor": {
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    },
+    "couldntFind": "Couldn't find {username}",
+    "@couldntFind": {
+        "placeholders": {
+            "username": {
+                "type": "String"
+            }
+        }
+    }
  }

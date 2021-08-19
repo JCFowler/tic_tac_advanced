@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../helpers/translate_helper.dart';
 
 import '../helpers/snack_bar_helper.dart';
 import '../main.dart';
@@ -42,7 +43,7 @@ class InviteSnackBarLayout extends StatelessWidget {
                 const Icon(Icons.person),
                 FittedBox(
                   child: Text(
-                    '${game.hostPlayer} Invited you.',
+                    translate('invitedYou', args: game.hostPlayer),
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 18,
@@ -57,9 +58,9 @@ class InviteSnackBarLayout extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 TextButton(
-                  child: const Text(
-                    'Decline',
-                    style: TextStyle(
+                  child: Text(
+                    translate('decline'),
+                    style: const TextStyle(
                       color: Colors.red,
                       fontSize: 20,
                     ),
@@ -72,7 +73,7 @@ class InviteSnackBarLayout extends StatelessWidget {
                 TextButton(
                   child: FittedBox(
                     child: Text(
-                      'Join',
+                      translate('join'),
                       style: TextStyle(
                         color: Theme.of(context).accentColor,
                         fontSize: 20,

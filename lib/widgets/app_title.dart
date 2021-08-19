@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/l10n.dart';
+import '../helpers/translate_helper.dart';
 
 final colorizeTextStyle = TextStyle(
   fontSize: 50.0,
@@ -38,14 +38,14 @@ class AppTitle extends StatelessWidget {
               child: Stack(
                 children: [
                   Text(
-                    translate(text, context),
+                    translate(text),
                     style: TextStyle(
                       fontSize: 39,
                       foreground: paint,
                     ),
                   ),
                   Text(
-                    translate(text, context),
+                    translate(text),
                     style: TextStyle(
                       fontSize: 40,
                       color: Colors.blue[50],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
-import '../models/l10n.dart';
 import '../providers/game_provider.dart';
 
 class ScoreBoard extends StatelessWidget {
@@ -45,7 +45,7 @@ class ScoreBoard extends StatelessWidget {
               RotatedBox(
                 quarterTurns: 1,
                 child: Text(
-                  translate('wins', context),
+                  translate('wins'),
                   style: TextStyle(
                     fontSize: 20,
                     color: Theme.of(context).scaffoldBackgroundColor,

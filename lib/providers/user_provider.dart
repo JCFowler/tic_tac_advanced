@@ -16,8 +16,6 @@ class UserProvider with ChangeNotifier {
   AppUser? _user;
   final StreamController<List<AppUser>> _friendStream = BehaviorSubject();
   final StreamController<List<Invited>> _invitedStream = BehaviorSubject();
-  List<Invited> _oldInvites = [];
-  Invited? _showingInvite;
 
   String get uid {
     return _uid;

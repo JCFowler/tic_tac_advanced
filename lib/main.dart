@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:tic_tac_advanced/services/local_storage_service.dart';
 
 import 'models/l10n.dart';
 import 'providers/game_provider.dart';
@@ -18,8 +19,11 @@ import 'screens/single_player_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+Locale? initalLocale;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initalLocale = await LocalStorageService.getLocale();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) async {
     await Firebase.initializeApp();
@@ -43,7 +47,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (ctx) => LocaleProvider(),
+          create: (ctx) => LocaleProvider(initalLocale),
         ),
         ChangeNotifierProvider(
           create: (ctx) => UserProvider(),

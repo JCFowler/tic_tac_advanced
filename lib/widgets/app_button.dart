@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
-import '../models/l10n.dart';
 import '../providers/game_provider.dart';
 
 final Paint _paint = Paint()
@@ -26,7 +26,7 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final _deviceSize = MediaQuery.of(context).size;
 
-    final translatedText = translate(text, context);
+    final translatedText = translate(text);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),

@@ -8,6 +8,7 @@ import '../helpers/ai_helper.dart';
 import '../helpers/custom_dialog.dart';
 import '../helpers/snack_bar_helper.dart';
 import '../helpers/timeout.dart';
+import '../helpers/translate_helper.dart';
 import '../models/app_user.dart';
 import '../models/constants.dart';
 import '../models/game_model.dart';
@@ -155,7 +156,8 @@ class GameProvider with ChangeNotifier {
               gameModel.addedRematch == false) {
           } else {
             _waitingDiagOpen = true;
-            showLoadingDialog(_buildContext!, 'Waiting for new player...')
+            showLoadingDialog(
+                    _buildContext!, translate('waitingForSecondPlayer'))
                 .then((result) {
               if (result == 'cancel') {
                 _waitingDiagOpen = false;
@@ -210,7 +212,7 @@ class GameProvider with ChangeNotifier {
         if (_multiplayerData!.addedPlayer != null) {
           return _multiplayerData!.addedPlayer!;
         } else {
-          return 'No one..';
+          return translate('noOne');
         }
       } else {
         return _multiplayerData!.hostPlayer;
@@ -277,13 +279,13 @@ class GameProvider with ChangeNotifier {
 
   void addMark(int position) {
     if (_gameTied) {
-      _showDialog('Game Tied', yesText: 'Play again');
+      _showDialog(translate('gameTied'), yesText: translate('playAgain'));
     }
     if (gameOver) {
       _showDialog(
-        'Game finished!',
+        translate('gameFinished'),
         content: getWinningContentString(),
-        yesText: 'Play again',
+        yesText: translate('playAgain'),
       );
     }
 
@@ -377,9 +379,9 @@ class GameProvider with ChangeNotifier {
           _audioCache.play('win-long.wav', mode: PlayerMode.LOW_LATENCY);
           setTimeout(() {
             _showDialog(
-              'Game finished!',
+              translate('gameFinished'),
               content: getWinningContentString(),
-              yesText: 'Play again?',
+              yesText: translate('playAgain'),
             );
           }, 900);
           return true;
@@ -412,15 +414,15 @@ class GameProvider with ChangeNotifier {
       }
     }
 
-    _showDialog('Game Tied', yesText: 'Play Again');
+    _showDialog(translate('gameFinished'), yesText: translate('playAgain'));
     return true;
   }
 
   String getWinningContentString() {
     if (player == Player.Player1) {
-      return 'Blue player won!';
+      return translate('bluePlayerWon');
     } else {
-      return 'Red player won!';
+      return translate('redPlayerWon');
     }
   }
 
@@ -516,7 +518,7 @@ class GameProvider with ChangeNotifier {
   // Joining and Hosting game logic:
 
   joinGame(BuildContext context, GameModel game) {
-    showLoadingDialog(context, 'Joining game...');
+    showLoadingDialog(context, translate('joiningGame'));
     _fireService
         .joinGame(
       game.id,
@@ -532,7 +534,7 @@ class GameProvider with ChangeNotifier {
       Navigator.of(context).pushNamed(GameScreen.routeName);
     }).catchError((error) {
       Navigator.of(context).pop();
-      showSnackBar('Host ended game.');
+      showSnackBar(translate('hostEndedGame'));
     });
   }
 
@@ -544,8 +546,8 @@ class GameProvider with ChangeNotifier {
     showLoadingDialog(
       context,
       friend != null
-          ? 'Waiting for ${friend.username}...'
-          : 'Waiting for second player...',
+          ? translate('waitingFor', args: friend.username)
+          : translate('waitingForSecondPlayer'),
     ).then((result) {
       if (result == 'cancel') {
         _fireService.deleteGame(uid);
@@ -562,7 +564,8 @@ class GameProvider with ChangeNotifier {
             .then(
           (gameModel) {
             if (gameModel!.declined) {
-              showSnackBar('Game invite was declined.', textColor: Colors.red);
+              showSnackBar(translate('gameInviteDeclined'),
+                  textColor: Colors.red);
               Navigator.of(context).pop();
             } else {
               setStartingPlayer(

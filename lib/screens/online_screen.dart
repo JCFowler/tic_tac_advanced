@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
+import '../helpers/translate_helper.dart';
 import '../models/game_model.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
@@ -51,16 +52,16 @@ class _OnlineScreenState extends State<OnlineScreen> {
           child: games.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SpinningIcon(
+                  children: [
+                    const SpinningIcon(
                       icon: Icon(
                         Icons.sentiment_dissatisfied,
                         size: 60,
                       ),
                     ),
                     Text(
-                      'No games yet',
-                      style: TextStyle(
+                      translate('noGamesYet'),
+                      style: const TextStyle(
                         fontSize: 22,
                         color: Colors.black,
                       ),
@@ -79,7 +80,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                       onPressed: () {
                         gameProvider.joinGame(context, games[index]);
                       },
-                      child: const Text('Play'),
+                      child: Text(translate('play')),
                     ),
                   ),
                 ),
@@ -114,7 +115,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
               ? []
               : [
                   SpeedDialChild(
-                    label: 'Anyone',
+                    label: translate('anyone'),
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
@@ -123,7 +124,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     onTap: () => gameProvider.hostGame(context),
                   ),
                   SpeedDialChild(
-                    label: 'Friend',
+                    label: translate('friend'),
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
@@ -166,7 +167,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
   @override
   Widget build(BuildContext context) {
     final _gameProvider = Provider.of<GameProvider>(context, listen: false);
-    final _userProvider = Provider.of<UserProvider>(context, listen: false);
+    final _userProvider = Provider.of<UserProvider>(context);
     final _deviceSize = MediaQuery.of(context).size;
 
     final topPadding = MediaQuery.of(context).padding.top +
@@ -225,7 +226,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                           FittedBox(
                             child: SizedBox(
                               height: _deviceSize.height * 0.08,
-                              child: const Tab(text: 'All games'),
+                              child: Tab(text: translate('allGames')),
                             ),
                           ),
                         ],
@@ -247,14 +248,14 @@ class _OnlineScreenState extends State<OnlineScreen> {
                               _bottomBtn(
                                 context,
                                 _gameProvider,
-                                'Friends',
+                                translate('friends'),
                                 true,
                                 _deviceSize.height * 0.8,
                               ),
                               _bottomBtn(
                                 context,
                                 _gameProvider,
-                                'Host Game',
+                                translate('hostGame'),
                                 false,
                                 _deviceSize.height * 0.8,
                               ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/custom_dialog.dart';
+import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../providers/game_provider.dart';
 import '../widgets/game_app_bar.dart';
@@ -30,8 +31,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Future<bool> _onWillPop() async {
     var result = await showAlertDialog(
       context,
-      'Exit Game',
-      content: 'Are you sure you want to quit the game?',
+      translate('exitGame'),
+      content: translate('areYouSureToQuit'),
     );
 
     if (result != null && result) {
