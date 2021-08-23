@@ -5,7 +5,8 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../helpers/custom_dialog.dart';
+import '../dialogs/dialogs/change_username.dart';
+import '../dialogs/dialogs/friend.dart';
 import '../helpers/translate_helper.dart';
 import '../models/game_model.dart';
 import '../providers/game_provider.dart';

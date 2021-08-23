@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../helpers/custom_dialog.dart';
+import '../dialogs/dialogs/alert.dart';
 import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../providers/game_provider.dart';

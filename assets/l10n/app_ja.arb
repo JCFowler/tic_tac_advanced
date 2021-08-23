@@ -53,6 +53,22 @@
     "bluePlayerWon": "ブループレイヤーの勝ち！",
     "redPlayerWon": "レッドプレイヤーの勝ち！",
     "hostEndedGame": "ホストがゲームを終了しました",
+    "newUpdate": "Update available",
+    "goDownload": "Press the button to go to the app store to download!",
+    "download": "Download",
+    "badWord": "Bad words aren't allowed",
+    "restart": "Restart",
+    "resign": "Resign",
+
+    "howToPlay": "How To Play",
+    "htpTitleOverview": "Overview",
+    "htpOne": "Just like regular Tic Tac Toe, you win with 3 in a row, but in this game, you have numbers 1 - 7.\nSo you are able to over take your opponent with a higher number.",
+    "htpTitleMoves": "How to move",
+    "howToMoveOne": "Tap a usable number and tap the square you want to go",
+    "howToMoveTwo": "Tap and drag the usable number to the square you want to go",
+    "htpTitleTips": "Tips",
+    "tipOne": "Number 1 can be used any number of times.",
+    "tipTwo": "The same number cannot over take, so a 7 cannot overtake another 7.",
 
 
     "areYouSureToRemove": "本当に{username}を削除しますか？",

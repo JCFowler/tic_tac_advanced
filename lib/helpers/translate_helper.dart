@@ -127,6 +127,37 @@ String translate(String key, {dynamic args}) {
       return translations.redPlayerWon;
     case 'hostEndedGame':
       return translations.hostEndedGame;
+    case 'newUpdate':
+      return translations.newUpdate;
+    case 'goDownload':
+      return translations.goDownload;
+    case 'download':
+      return translations.download;
+    case 'badWord':
+      return translations.badWord;
+    case 'restart':
+      return translations.restart;
+    case 'resign':
+      return translations.resign;
+    case 'howToPlay':
+      return translations.howToPlay;
+    case 'htpTitleOverview':
+      return translations.htpTitleOverview;
+    case 'htpOne':
+      return translations.htpOne;
+    case 'htpTitleMoves':
+      return translations.htpTitleMoves;
+    case 'howToMoveOne':
+      return translations.howToMoveOne;
+    case 'howToMoveTwo':
+      return translations.howToMoveTwo;
+    case 'htpTitleTips':
+      return translations.htpTitleTips;
+    case 'tipOne':
+      return translations.tipOne;
+    case 'tipTwo':
+      return translations.tipTwo;
+
     default:
       return '!!$key';
   }

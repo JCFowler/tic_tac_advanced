@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/check_version.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/app_button.dart';
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       });
     }
+    checkVersion(context);
     super.initState();
   }
 

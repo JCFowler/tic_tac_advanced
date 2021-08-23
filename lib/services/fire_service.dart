@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tic_tac_advanced/models/version.dart';
 
 import '../models/app_user.dart';
 import '../models/constants.dart';
@@ -11,6 +12,7 @@ import '../models/mark.dart';
 
 const String usersCol = 'users';
 const String gamesCol = 'games';
+const String versionCol = 'version';
 
 // Testing
 // const String usersCol = 'test_users';
@@ -295,5 +297,13 @@ class FireService {
         'addedRematch': null,
       },
     );
+  }
+
+  Future<Version?> getVersion({required bool isAndriod}) async {
+    final String doc = isAndriod ? 'android' : 'ios';
+    final res = await _firestore.collection(versionCol).doc(doc).get();
+    if (res.data() == null) return null;
+
+    return Version.toObject(res.data()!);
   }
 }

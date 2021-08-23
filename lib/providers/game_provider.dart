@@ -4,8 +4,10 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
+import '../dialogs/dialogs/alert.dart';
+import '../dialogs/dialogs/loading.dart';
+import '../dialogs/dialogs/online_rematch.dart';
 import '../helpers/ai_helper.dart';
-import '../helpers/custom_dialog.dart';
 import '../helpers/snack_bar_helper.dart';
 import '../helpers/timeout.dart';
 import '../helpers/translate_helper.dart';
@@ -285,7 +287,7 @@ class GameProvider with ChangeNotifier {
       _showDialog(
         translate('gameFinished'),
         content: getWinningContentString(),
-        yesText: translate('playAgain'),
+        yesText: 'playAgain',
       );
     }
 
