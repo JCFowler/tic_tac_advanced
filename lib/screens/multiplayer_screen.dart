@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../providers/user_provider.dart';
 import '../widgets/app_button.dart';
@@ -24,7 +25,7 @@ class MultiplayerScreen extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            const AppTitle('multiplayer'),
+            AppTitle(translate('multiplayer')),
             Consumer<UserProvider>(
               builder: (ctx, userProvider, _) => Column(
                 mainAxisAlignment: MainAxisAlignment.center,

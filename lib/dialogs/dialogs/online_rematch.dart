@@ -15,11 +15,9 @@ Future<dynamic> showOnlineRematchDialog(
   GameModel model, {
   required bool won,
   required Stream<GameModel?> stream,
-  bool barrierDismissible = false,
 }) {
   return basicDialogComponent(
     context,
-    barrierDismissible: barrierDismissible,
     child: Column(
       children: [
         Row(
@@ -63,10 +61,8 @@ Future<dynamic> showOnlineRematchDialog(
                 }
 
                 if (player1Answer == true && player2Answer == true) {
-                  // setTimeout(() {
                   Navigator.pop(context);
                   game.restartOnlineGame(runFirebase: false);
-                  // }, 2000);
                 }
 
                 return Column(
@@ -76,17 +72,24 @@ Future<dynamic> showOnlineRematchDialog(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _getRematchAnswer(
-                            context,
-                            game.getStaticUsername(Player.Player2),
-                            game.playerColor(Player.Player2),
-                            player2Answer,
+                          Flexible(
+                            flex: 1,
+                            child: _getRematchAnswer(
+                              context,
+                              game.getStaticUsername(Player.Player2),
+                              game.playerColor(Player.Player2),
+                              player2Answer,
+                            ),
                           ),
-                          _getRematchAnswer(
-                            context,
-                            game.getStaticUsername(Player.Player1),
-                            game.playerColor(Player.Player1),
-                            player1Answer,
+                          const SizedBox(width: 5),
+                          Flexible(
+                            flex: 1,
+                            child: _getRematchAnswer(
+                              context,
+                              game.getStaticUsername(Player.Player1),
+                              game.playerColor(Player.Player1),
+                              player1Answer,
+                            ),
                           ),
                         ],
                       ),
@@ -156,11 +159,19 @@ Widget _getRematchAnswer(
   }
   return Column(
     children: [
-      Text(
-        username,
-        style: TextStyle(
-          color: color,
-          fontSize: 16,
+      SizedBox(
+        height: 30,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            username,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: TextStyle(
+              color: color,
+              fontSize: 16,
+            ),
+          ),
         ),
       ),
       Card(

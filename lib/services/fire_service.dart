@@ -117,19 +117,20 @@ class FireService {
       var userRef = _firestore.collection(usersCol).doc(user.uid);
 
       List<Map<String, dynamic>> updateList = [];
-
       await Future.forEach(user.friends, (AppUser friend) async {
         var friendRef = _firestore.collection(usersCol).doc(friend.uid);
         await transaction.get(friendRef).then((docFriend) {
           var fri = AppUser.docToObject(docFriend, returnFriends: true);
-          var index =
-              fri!.friends.indexWhere((element) => element.uid == user.uid);
-          if (index != -1) {
-            fri.friends[index].username = newName;
-            updateList.add({
-              'ref': friendRef,
-              'newFriends': AppUser.friendListToJson(fri.friends)
-            });
+          if (fri != null) {
+            var index =
+                fri.friends.indexWhere((element) => element.uid == user.uid);
+            if (index != -1) {
+              fri.friends[index].username = newName;
+              updateList.add({
+                'ref': friendRef,
+                'newFriends': AppUser.friendListToJson(fri.friends)
+              });
+            }
           }
         });
       });

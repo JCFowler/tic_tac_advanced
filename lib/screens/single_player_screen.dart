@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_title.dart';
@@ -19,24 +20,24 @@ class SinglePlayerScreen extends StatelessWidget {
       body: BackgroundGradient(
         child: Center(
           child: Column(
-            children: const [
-              AppTitle('singlePlayer'),
-              NavigatorAppButton(
+            children: [
+              AppTitle(translate('singlePlayer')),
+              const NavigatorAppButton(
                 'random',
                 routeName: GameScreen.routeName,
                 gameType: GameType.Random,
               ),
-              NavigatorAppButton(
+              const NavigatorAppButton(
                 'easy',
                 routeName: GameScreen.routeName,
                 gameType: GameType.Easy,
               ),
-              NavigatorAppButton(
+              const NavigatorAppButton(
                 'normal',
                 routeName: GameScreen.routeName,
                 gameType: GameType.Normal,
               ),
-              NavigatorAppButton(
+              const NavigatorAppButton(
                 'hard',
                 routeName: GameScreen.routeName,
                 gameType: GameType.Hard,

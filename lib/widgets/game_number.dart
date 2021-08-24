@@ -22,7 +22,7 @@ class GameNumber extends StatelessWidget {
       builder: (ctx, game, _) => Text(
         mark.number != -1 ? mark.number.toString() : '',
         style: TextStyle(
-          fontSize: 50,
+          fontSize: 60,
           color: invert ? Colors.white : game.playerColor(mark.player),
         ),
       ),

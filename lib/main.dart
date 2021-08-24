@@ -80,15 +80,9 @@ class MyApp extends StatelessWidget {
             dialogBackgroundColor: Colors.blue.shade50.withOpacity(0.5),
             scaffoldBackgroundColor: Colors.blue.shade50,
             primaryTextTheme: const TextTheme(
-              headline6: TextStyle(color: Colors.red),
+              headline6: TextStyle(color: Colors.blue),
             ),
-            fontFamily: 'LibreBaskerville',
-            // textTheme: GoogleFonts.blackOpsOneTextTheme(),
-            // textTheme: GoogleFonts.chakraPetchTextTheme(),
-            // textTheme: GoogleFonts.playTextTheme(),
-            // textTheme: GoogleFonts.libreBaskervilleTextTheme(),
-            // textTheme: GoogleFonts.titilliumWebTextTheme(),
-            // textTheme: GoogleFonts.orbitronTextTheme(),
+            fontFamily: 'Acme',
           ),
           home: const HomeScreen(),
           onGenerateRoute: (settings) {

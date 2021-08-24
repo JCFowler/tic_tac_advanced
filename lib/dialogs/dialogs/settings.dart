@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tic_tac_advanced/dialogs/dialogs/how_to_play.dart';
-import 'package:tic_tac_advanced/widgets/primary_button.dart';
-import 'package:tic_tac_advanced/widgets/username_text_field.dart';
 
 import '../../helpers/timeout.dart';
 import '../../helpers/translate_helper.dart';
@@ -9,6 +6,7 @@ import '../../models/l10n.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../services/fire_service.dart';
+import '../../widgets/username_text_field.dart';
 import '../base_dialog_components.dart';
 
 showSettingsDialog(BuildContext context, UserProvider userProvider,

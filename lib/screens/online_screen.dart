@@ -12,9 +12,10 @@ import '../models/game_model.dart';
 import '../providers/game_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/fire_service.dart';
+import '../widgets/app_title.dart';
 import '../widgets/background_gradient.dart';
+import '../widgets/empty_list_placeholder.dart';
 import '../widgets/game_app_bar.dart';
-import '../widgets/spinning_icon.dart';
 
 class OnlineScreen extends StatefulWidget {
   static const routeName = '/online';
@@ -37,6 +38,90 @@ class _OnlineScreenState extends State<OnlineScreen> {
     openGamesStream = _fireService.openGamesStream(userProvider.uid);
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final _gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final _userProvider = Provider.of<UserProvider>(context);
+    final _deviceSize = MediaQuery.of(context).size;
+
+    final topPadding = MediaQuery.of(context).padding.top +
+        const GameAppBar().preferredSize.height -
+        10;
+    return Scaffold(
+      appBar: GameAppBar(
+        title: _userProvider.username,
+        onTap: () async {
+          await showChangeUsernameDialog(
+            context,
+            fireService: _fireService,
+            userProvider: _userProvider,
+          );
+        },
+      ),
+      extendBodyBehindAppBar: true,
+      body: BackgroundGradient(
+        child: Padding(
+          padding: EdgeInsets.only(top: topPadding),
+          child: Column(
+            children: [
+              Divider(
+                indent: _deviceSize.width * 0.2,
+                endIndent: _deviceSize.width * 0.2,
+                color: Theme.of(context).accentColor,
+                thickness: 1.5,
+              ),
+              AppTitle(
+                translate('allGames'),
+                regularSize: false,
+              ),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 5,
+                  ),
+                  width: _deviceSize.width * 0.9,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dialogBackgroundColor,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(
+                      color: Colors.black54,
+                    ),
+                  ),
+                  child: _gameStream(context, _gameProvider),
+                ),
+              ),
+              SizedBox(
+                height: _deviceSize.height * 0.1,
+                child: FittedBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _bottomBtn(
+                        context,
+                        _gameProvider,
+                        translate('friends'),
+                        true,
+                        _deviceSize.height * 0.8,
+                      ),
+                      _bottomBtn(
+                        context,
+                        _gameProvider,
+                        translate('hostGame'),
+                        false,
+                        _deviceSize.height * 0.8,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _gameStream(BuildContext context, GameProvider gameProvider) {
     return StreamBuilder(
       stream: openGamesStream,
@@ -51,24 +136,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
           context: context,
           removeTop: true,
           child: games.isEmpty
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SpinningIcon(
-                      icon: Icon(
-                        Icons.sentiment_dissatisfied,
-                        size: 60,
-                      ),
-                    ),
-                    Text(
-                      translate('noGamesYet'),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                )
+              ? EmptyListPlaceholder(translate('noGamesYet'))
               : ListView.builder(
                   itemCount: games.length,
                   itemBuilder: (ctx, index) => ListTile(
@@ -143,133 +211,6 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     },
                   ),
                 ],
-        ),
-      ),
-    );
-  }
-
-  Widget _allTab(BuildContext context, gameProvider, userProvider) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 5,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).dialogBackgroundColor,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        border: Border.all(
-          color: Colors.black54,
-        ),
-      ),
-      child: _gameStream(context, gameProvider),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final _gameProvider = Provider.of<GameProvider>(context, listen: false);
-    final _userProvider = Provider.of<UserProvider>(context);
-    final _deviceSize = MediaQuery.of(context).size;
-
-    final topPadding = MediaQuery.of(context).padding.top +
-        const GameAppBar().preferredSize.height -
-        10;
-    return Scaffold(
-      appBar: GameAppBar(
-        title: _userProvider.username,
-        onTap: () async {
-          await showChangeUsernameDialog(
-            context,
-            fireService: _fireService,
-            userProvider: _userProvider,
-          );
-        },
-      ),
-      extendBodyBehindAppBar: true,
-      body: BackgroundGradient(
-        child: Padding(
-          padding: EdgeInsets.only(top: topPadding),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Divider(
-                  indent: _deviceSize.width * 0.2,
-                  endIndent: _deviceSize.width * 0.2,
-                  color: Theme.of(context).accentColor,
-                  thickness: 1.5,
-                ),
-                DefaultTabController(
-                  length: 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TabBar(
-                        labelStyle: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        labelColor: Colors.purple.shade800,
-                        indicator: BoxDecoration(
-                          color: Theme.of(context).dialogBackgroundColor,
-                          // border: Border.all(
-                          //   // color: Colors.red,
-                          //   width: 2,
-                          // ),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        unselectedLabelStyle: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        unselectedLabelColor: Colors.black,
-                        tabs: [
-                          FittedBox(
-                            child: SizedBox(
-                              height: _deviceSize.height * 0.08,
-                              child: Tab(text: translate('allGames')),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: _deviceSize.height * 0.65,
-                        child: TabBarView(
-                          children: [
-                            _allTab(context, _gameProvider, _userProvider),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: _deviceSize.height * 0.1,
-                        child: FittedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _bottomBtn(
-                                context,
-                                _gameProvider,
-                                translate('friends'),
-                                true,
-                                _deviceSize.height * 0.8,
-                              ),
-                              _bottomBtn(
-                                context,
-                                _gameProvider,
-                                translate('hostGame'),
-                                false,
-                                _deviceSize.height * 0.8,
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import '../../widgets/empty_list_placeholder.dart';
 
 import '../../helpers/timeout.dart';
 import '../../helpers/translate_helper.dart';
@@ -172,8 +173,9 @@ showFriendsDialog(
                     final privateGames = snapshot.data![1] as List<GameModel>;
 
                     if (friends.isEmpty) {
-                      return Center(
-                        child: Text(translate('noFriends')),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 100),
+                        child: EmptyListPlaceholder(translate('noFriends')),
                       );
                     }
                     return ListView.builder(

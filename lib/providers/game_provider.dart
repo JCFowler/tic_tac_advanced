@@ -383,7 +383,7 @@ class GameProvider with ChangeNotifier {
             _showDialog(
               translate('gameFinished'),
               content: getWinningContentString(),
-              yesText: translate('playAgain'),
+              yesText: 'playAgain',
             );
           }, 900);
           return true;
@@ -557,7 +557,6 @@ class GameProvider with ChangeNotifier {
     });
     _fireService.hostGame(uid, username, friendUid: friend?.uid).then(
       (newGameId) {
-        setGameDoc(newGameId);
         _fireService
             .gameMatchStream(newGameId)
             .firstWhere((gameModel) =>
@@ -570,6 +569,7 @@ class GameProvider with ChangeNotifier {
                   textColor: Colors.red);
               Navigator.of(context).pop();
             } else {
+              setGameDoc(newGameId);
               setStartingPlayer(
                 gameModel.hostPlayerGoesFirst ? Player.Player1 : Player.Player2,
               );

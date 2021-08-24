@@ -36,11 +36,13 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: title != null
           ? GestureDetector(
               onTap: onTap != null ? () => onTap!() : null,
-              child: Text(
-                title!,
-                style: const TextStyle(
-                  fontSize: 30,
-                  color: Colors.white,
+              child: FittedBox(
+                child: Text(
+                  title!,
+                  style: const TextStyle(
+                    fontSize: 30,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             )
@@ -88,15 +90,20 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Text(translate('howToPlay')),
               value: popUpSelection.howToPlay,
             ),
-            gameProvider.gameDoc.isNotEmpty
-                ? PopupMenuItem(
-                    child: Text(translate('resign')),
-                    value: popUpSelection.resign,
-                  )
-                : PopupMenuItem(
-                    child: Text(translate('restart')),
-                    value: popUpSelection.restart,
-                  )
+            if (gameProvider.gameDoc.isEmpty)
+              PopupMenuItem(
+                child: Text(translate('restart')),
+                value: popUpSelection.restart,
+              )
+            // gameProvider.gameDoc.isNotEmpty
+            //     ? PopupMenuItem(
+            //         child: Text(translate('resign')),
+            //         value: popUpSelection.resign,
+            //       )
+            //     : PopupMenuItem(
+            //         child: Text(translate('restart')),
+            //         value: popUpSelection.restart,
+            //       )
           ],
         ),
       ];

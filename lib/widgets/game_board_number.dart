@@ -48,7 +48,7 @@ class GameBoardNumber extends StatelessWidget {
           number.toString(),
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 36,
+            fontSize: 40,
             color: used
                 ? Colors.grey
                 : selected

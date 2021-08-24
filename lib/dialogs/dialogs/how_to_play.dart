@@ -11,25 +11,48 @@ showHowToPlayDialog(BuildContext context, {firstTime = false}) {
     context,
     barrierDismissible: true,
     outSidePadding: const EdgeInsets.all(20),
-    child: SizedBox(
-      height: _deviceSize.height * 0.8,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            dialogHeaderComponent(context, 'howToPlay'),
-            Divider(
-              thickness: 1.5,
-              color: Theme.of(context).primaryColor,
-            ),
-            _text(context, translate('htpTitleOverview'), isTitle: true),
-            _text(context, translate('htpOne')),
-            _text(context, translate('htpTitleMoves'), isTitle: true),
-            _text(context, '$bullet ${translate('howToMoveOne')}'),
-            _text(context, '$bullet ${translate('howToMoveTwo')}'),
-            _text(context, translate('htpTitleTips'), isTitle: true),
-            _text(context, '$bullet ${translate('tipOne')}'),
-            _text(context, '$bullet ${translate('tipTwo')}'),
-          ],
+    usePadding: false,
+    child: Padding(
+      padding: const EdgeInsets.only(
+        right: 20,
+        left: 20,
+      ),
+      child: SizedBox(
+        height: _deviceSize.height * 0.8,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              dialogHeaderComponent(context, 'howToPlay'),
+              Divider(
+                thickness: 1.5,
+                color: Theme.of(context).primaryColor,
+              ),
+              _text(context, translate('htpTitleOverview'), isTitle: true),
+              _text(context, translate('htpOne')),
+              SizedBox(
+                height: _deviceSize.height * 0.2,
+                child: Image.asset(
+                  'assets/images/how-to-play-1.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+              _text(context, translate('htpTitleMoves'), isTitle: true),
+              _text(context, '$bullet ${translate('howToMoveOne')}'),
+              _text(context, '$bullet ${translate('howToMoveTwo')}'),
+              SizedBox(
+                height: _deviceSize.height * 0.1,
+                child: Image.asset(
+                  'assets/images/how-to-play-2.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+              _text(context, translate('htpTitleTips'), isTitle: true),
+              _text(context, '$bullet ${translate('tipOne')}'),
+              _text(context, '$bullet ${translate('tipTwo')}'),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     ),
