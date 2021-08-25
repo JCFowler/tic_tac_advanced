@@ -20,11 +20,15 @@ class ConnectionStatus {
 
   void initialize() {
     _connectivity.onConnectivityChanged.listen(_connectionChange);
+    // _connectivity.onConnectivityChanged.listen((event) {
+    //   print('Changed');
+    // });
   }
 
   Stream<bool> get stream => connectionChangeController.stream as Stream<bool>;
 
   void _connectionChange(ConnectivityResult result) {
+    print('Here?');
     checkConnection(result);
   }
 
