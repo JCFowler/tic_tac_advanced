@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/connection_status.dart';
 import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../providers/user_provider.dart';
@@ -37,9 +38,20 @@ class MultiplayerScreen extends StatelessWidget {
                   ),
                   userProvider.uid == ''
                       ? const LoadingAppButton()
-                      : const NavigatorAppButton(
-                          'onlinePlay',
-                          routeName: OnlineScreen.routeName,
+                      : StreamBuilder(
+                          stream: ConnectionStatus.getInstance().stream,
+                          builder: (ctx, AsyncSnapshot<bool> snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const LoadingAppButton();
+                            }
+
+                            return NavigatorAppButton(
+                              'onlinePlay',
+                              routeName: OnlineScreen.routeName,
+                              disabled: !snapshot.data!,
+                            );
+                          },
                         ),
                 ],
               ),

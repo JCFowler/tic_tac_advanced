@@ -12,7 +12,7 @@ final Paint _paint = Paint()
 
 class AppButton extends StatelessWidget {
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget? child;
 
   const AppButton(
@@ -36,9 +36,9 @@ class AppButton extends StatelessWidget {
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).dialogBackgroundColor,
-          side: const BorderSide(
+          side: BorderSide(
             width: 1.0,
-            color: Colors.purple,
+            color: onTap == null ? Colors.transparent : Colors.purple,
           ),
           elevation: 20,
         ),
@@ -59,7 +59,9 @@ class AppButton extends StatelessWidget {
                       translatedText,
                       style: TextStyle(
                         fontSize: 40,
-                        color: Theme.of(context).scaffoldBackgroundColor,
+                        color: onTap == null
+                            ? Colors.grey.shade400
+                            : Theme.of(context).scaffoldBackgroundColor,
                       ),
                     ),
                   ],
@@ -75,10 +77,12 @@ class NavigatorAppButton extends StatelessWidget {
   final String text;
   final String routeName;
   final GameType? gameType;
+  final bool disabled;
 
   const NavigatorAppButton(
     this.text, {
     Key? key,
+    this.disabled = false,
     required this.routeName,
     this.gameType,
   }) : super(key: key);
@@ -87,13 +91,15 @@ class NavigatorAppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppButton(
       text,
-      () {
-        if (gameType != null) {
-          Provider.of<GameProvider>(context, listen: false)
-              .setGameType(gameType!);
-        }
-        Navigator.of(context).pushNamed(routeName);
-      },
+      disabled
+          ? null
+          : () {
+              if (gameType != null) {
+                Provider.of<GameProvider>(context, listen: false)
+                    .setGameType(gameType!);
+              }
+              Navigator.of(context).pushNamed(routeName);
+            },
     );
   }
 }

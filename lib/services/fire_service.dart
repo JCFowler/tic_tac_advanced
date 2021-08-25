@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tic_tac_advanced/models/version.dart';
 
 import '../models/app_user.dart';
 import '../models/constants.dart';
 import '../models/game_model.dart';
 import '../models/last_move.dart';
 import '../models/mark.dart';
+import '../models/version.dart';
 
 const String usersCol = 'users';
 const String gamesCol = 'games';
