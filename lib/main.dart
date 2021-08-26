@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import 'helpers/connection_status.dart';
 import 'models/l10n.dart';
+import 'providers/ad_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/user_provider.dart';
@@ -28,10 +30,17 @@ void main() async {
   ConnectionStatus connectionStatus = ConnectionStatus.getInstance();
   connectionStatus.initialize();
 
+  final adState = AdProvider(MobileAds.instance.initialize());
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) async {
     await Firebase.initializeApp();
-    runApp(const MyApp());
+    runApp(
+      Provider.value(
+        value: adState,
+        builder: (ctx, _) => const MyApp(),
+      ),
+    );
   });
 }
 

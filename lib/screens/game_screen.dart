@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../dialogs/dialogs/alert.dart';
 import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
+import '../providers/ad_provider.dart';
 import '../providers/game_provider.dart';
 import '../widgets/game_app_bar.dart';
 import '../widgets/game_number.dart';
@@ -37,8 +38,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if (result != null && result) {
       Provider.of<GameProvider>(context, listen: false).leaveGame();
+      Provider.of<AdProvider>(context, listen: false).showInterstitialAd();
     }
-
     return result ?? false;
   }
 

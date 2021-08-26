@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/ad_provider.dart';
 
 const double opacity = 0.9;
 List<List<Color>> colors = [
@@ -30,6 +34,28 @@ class BackgroundGradient extends StatefulWidget {
 
 class _BackgroundGradientState extends State<BackgroundGradient> {
   bool started = false;
+  BannerAd? bannerAd;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
+    adProvider.initialization.then((status) {
+      setState(() {
+        bannerAd = BannerAd(
+          size: AdSize.banner,
+          adUnitId: adProvider.bannerAdUnitId,
+          request: const AdRequest(),
+          listener: BannerAdListener(
+            onAdFailedToLoad: (Ad ad, LoadAdError error) {
+              ad.dispose();
+            },
+          ),
+        )..load();
+      });
+    });
+  }
 
   int index = 1;
   List<Color> selectColors = colors[0];
@@ -67,7 +93,16 @@ class _BackgroundGradientState extends State<BackgroundGradient> {
           });
         },
       ),
-      widget.child
+      Column(
+        children: [
+          Expanded(child: widget.child),
+          if (bannerAd != null)
+            SizedBox(
+              height: AdSize.banner.height.toDouble(),
+              child: AdWidget(ad: bannerAd!),
+            )
+        ],
+      )
     ]);
   }
 }

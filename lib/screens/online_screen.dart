@@ -114,7 +114,8 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     ],
                   ),
                 ),
-              )
+              ),
+              const SizedBox(height: 5),
             ],
           ),
         ),

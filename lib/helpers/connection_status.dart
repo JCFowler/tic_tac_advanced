@@ -28,7 +28,6 @@ class ConnectionStatus {
   Stream<bool> get stream => connectionChangeController.stream as Stream<bool>;
 
   void _connectionChange(ConnectivityResult result) {
-    print('Here?');
     checkConnection(result);
   }
 
