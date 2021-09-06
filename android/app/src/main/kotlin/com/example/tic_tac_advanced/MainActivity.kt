@@ -1,4 +1,4 @@
-package app.elevatedsoft.tic_tac_advanced
+package app.elevatedsoft.tictacadvanced
 
 import io.flutter.embedding.android.FlutterActivity
 
