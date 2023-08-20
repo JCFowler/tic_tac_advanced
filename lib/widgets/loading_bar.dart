@@ -64,7 +64,7 @@ class _LoadingBarState extends State<LoadingBar> {
       duration: Duration(milliseconds: widget.milliseconds),
       child: LinearProgressIndicator(
         value: percentage,
-        color: Theme.of(context).accentColor,
+        color: Theme.of(context).secondaryHeaderColor,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
     );

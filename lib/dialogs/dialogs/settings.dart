@@ -50,7 +50,9 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                 userProvider.username,
                 style: TextStyle(
                   fontSize: 22,
-                  color: updated ? Colors.green : Theme.of(context).accentColor,
+                  color: updated
+                      ? Colors.green
+                      : Theme.of(context).secondaryHeaderColor,
                 ),
               ),
               Row(
@@ -70,7 +72,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                       radius: 25,
                       backgroundColor: updated
                           ? Colors.green
-                          : Theme.of(context).accentColor,
+                          : Theme.of(context).secondaryHeaderColor,
                       child: IconButton(
                         icon: loading
                             ? const SizedBox(
@@ -143,7 +145,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                     translate('language'),
                     style: TextStyle(
                       fontSize: 18,
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).secondaryHeaderColor,
                     ),
                   ),
                   ...l10nLanguages.map(

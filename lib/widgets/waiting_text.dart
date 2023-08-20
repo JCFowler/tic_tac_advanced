@@ -48,7 +48,7 @@ class _WaitingTextState extends State<WaitingText>
             widget.text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Theme.of(context).accentColor,
+              color: Theme.of(context).secondaryHeaderColor,
               fontSize: 20,
             ),
           ),

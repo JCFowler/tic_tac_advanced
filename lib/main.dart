@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
           title: 'Tic Tac Advanced',
           theme: ThemeData(
             primarySwatch: Colors.blue,
-            accentColor: Colors.purple,
+            secondaryHeaderColor: Colors.purple,
             dialogBackgroundColor: Colors.blue.shade50.withOpacity(0.5),
             scaffoldBackgroundColor: Colors.blue.shade50,
             primaryTextTheme: const TextTheme(

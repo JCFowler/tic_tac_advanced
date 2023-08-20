@@ -67,7 +67,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
               Divider(
                 indent: _deviceSize.width * 0.2,
                 endIndent: _deviceSize.width * 0.2,
-                color: Theme.of(context).accentColor,
+                color: Theme.of(context).secondaryHeaderColor,
                 thickness: 1.5,
               ),
               AppTitle(
@@ -132,7 +132,9 @@ class _OnlineScreenState extends State<OnlineScreen> {
             child: CircularProgressIndicator(),
           );
         }
+        print('HIT!!');
         final games = streamSnapshot.data!;
+        print(games);
         return MediaQuery.removePadding(
           context: context,
           removeTop: true,
@@ -189,7 +191,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
-                    backgroundColor: Theme.of(context).accentColor,
+                    backgroundColor: Theme.of(context).secondaryHeaderColor,
                     child: const Icon(Icons.people, color: Colors.white),
                     onTap: () => gameProvider.hostGame(context),
                   ),
@@ -198,7 +200,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     labelStyle: const TextStyle(
                       fontSize: 20,
                     ),
-                    backgroundColor: Theme.of(context).accentColor,
+                    backgroundColor: Theme.of(context).secondaryHeaderColor,
                     child: const Icon(Icons.person, color: Colors.white),
                     onTap: () {
                       showFriendsDialog(

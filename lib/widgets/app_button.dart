@@ -115,7 +115,7 @@ class LoadingAppButton extends StatelessWidget {
       'loading',
       () {},
       child: CircularProgressIndicator(
-        color: Theme.of(context).accentColor,
+        color: Theme.of(context).secondaryHeaderColor,
       ),
     );
   }

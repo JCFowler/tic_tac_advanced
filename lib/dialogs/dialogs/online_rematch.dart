@@ -28,7 +28,7 @@ Future<dynamic> showOnlineRematchDialog(
               translate(game.player == Player.Player1 ? 'won' : 'lost'),
               style: TextStyle(
                 fontSize: 30,
-                color: Theme.of(context).accentColor,
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
             _getFaceIcon(context, won),
@@ -115,7 +115,7 @@ Widget _getFaceIcon(BuildContext context, bool won) {
     icon: Icon(
       icon,
       size: 40,
-      color: Theme.of(context).accentColor,
+      color: Theme.of(context).secondaryHeaderColor,
     ),
   );
 }
@@ -223,7 +223,7 @@ List<Widget> _getRematchButtons(
                           translate('rematch'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Theme.of(context).accentColor,
+                            color: Theme.of(context).secondaryHeaderColor,
                             fontSize: 20,
                           ),
                         )
@@ -231,7 +231,7 @@ List<Widget> _getRematchButtons(
                       translate('playerQuit'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).secondaryHeaderColor,
                         fontSize: 20,
                       ),
                     ),

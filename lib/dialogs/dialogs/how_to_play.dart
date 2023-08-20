@@ -70,7 +70,8 @@ Widget _text(BuildContext context, String text, {bool isTitle = false}) {
         text,
         textAlign: TextAlign.start,
         style: TextStyle(
-          color: isTitle ? Theme.of(context).accentColor : Colors.black,
+          color:
+              isTitle ? Theme.of(context).secondaryHeaderColor : Colors.black,
           fontSize: isTitle ? 20 : 16,
           fontWeight: isTitle ? FontWeight.bold : FontWeight.normal,
         ),

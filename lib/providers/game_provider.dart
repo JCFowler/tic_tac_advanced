@@ -31,7 +31,7 @@ class GameProvider with ChangeNotifier {
 
   late final AudioCache _audioCache = AudioCache(
     prefix: 'assets/audio/',
-    fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
+    // fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
   )..loadAll(['move.wav', 'win.wav', 'win-long.wav']);
 
   AnimationController? _numberController;
@@ -263,7 +263,7 @@ class GameProvider with ChangeNotifier {
       setTimeout(() {
         changeSelectedNumber(lastMove.number);
         setTimeout(() {
-          _audioCache.play('move.wav');
+          // _audioCache.play('move.wav');
           _lastMovePosition = lastMove.position;
           _gameMarks[lastMove.position] = Mark(_selectedNumber, Player.Player2);
 
@@ -292,7 +292,7 @@ class GameProvider with ChangeNotifier {
     }
 
     if (_selectedNumber != -1 && !gameOver) {
-      _audioCache.play('move.wav');
+      // _audioCache.play('move.wav');
       if (_gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] = Mark(_selectedNumber, _player);
         final gameFinished = checkForWinningLine();
@@ -378,7 +378,7 @@ class GameProvider with ChangeNotifier {
           increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
 
           notifyListeners();
-          _audioCache.play('win-long.wav', mode: PlayerMode.LOW_LATENCY);
+          // _audioCache.play('win-long.wav', mode: PlayerMode.LOW_LATENCY);
           setTimeout(() {
             _showDialog(
               translate('gameFinished'),

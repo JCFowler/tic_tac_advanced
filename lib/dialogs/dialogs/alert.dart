@@ -24,7 +24,7 @@ Future<bool?> showAlertDialog(
         Text(title,
             style: TextStyle(
               fontSize: 24,
-              color: Theme.of(context).accentColor,
+              color: Theme.of(context).secondaryHeaderColor,
             )),
         if (content != null)
           Padding(

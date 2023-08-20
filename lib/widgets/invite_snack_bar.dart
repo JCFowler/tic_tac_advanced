@@ -75,7 +75,7 @@ class InviteSnackBarLayout extends StatelessWidget {
                     child: Text(
                       translate('join'),
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).secondaryHeaderColor,
                         fontSize: 20,
                       ),
                     ),

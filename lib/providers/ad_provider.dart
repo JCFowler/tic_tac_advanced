@@ -17,22 +17,24 @@ class AdProvider {
   }
 
   String get bannerAdUnitId {
+    return '';
     if (kReleaseMode) {
       return Platform.isAndroid
           ? 'ca-app-pub-4356884138821246/1048479592'
           : 'ca-app-pub-4356884138821246/5567143259';
     } else {
-      return BannerAd.testAdUnitId;
+      // return BannerAd.testAdUnitId;
     }
   }
 
   String get interstitialAdUnitId {
+    return '';
     if (kReleaseMode) {
       return Platform.isAndroid
           ? 'ca-app-pub-4356884138821246/1892649791'
           : 'ca-app-pub-4356884138821246/9658980243';
     } else {
-      return InterstitialAd.testAdUnitId;
+      // return InterstitialAd.testAdUnitId;
     }
   }
 

@@ -88,7 +88,7 @@ showFriendsDialog(
                         radius: 25,
                         backgroundColor: found
                             ? Colors.green
-                            : Theme.of(context).accentColor,
+                            : Theme.of(context).secondaryHeaderColor,
                         child: IconButton(
                           icon: loading
                               ? const SizedBox(

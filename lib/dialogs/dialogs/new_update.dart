@@ -14,7 +14,7 @@ Future<bool?> showNewUpdateDialog(BuildContext context) {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
-              color: Theme.of(context).accentColor,
+              color: Theme.of(context).secondaryHeaderColor,
             )),
         Padding(
           padding: const EdgeInsets.only(top: 20),
