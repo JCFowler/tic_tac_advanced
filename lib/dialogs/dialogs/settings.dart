@@ -11,8 +11,8 @@ import '../base_dialog_components.dart';
 
 showSettingsDialog(BuildContext context, UserProvider userProvider,
     LocaleProvider localeProvider) {
-  final _deviceSize = MediaQuery.of(context).size;
-  final _form = GlobalKey<FormState>();
+  final deviceSize = MediaQuery.of(context).size;
+  final form = GlobalKey<FormState>();
   final FireService fireService = FireService();
 
   String? enteredText;
@@ -28,7 +28,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
     barrierDismissible: true,
     outSidePadding: const EdgeInsets.all(20),
     child: SizedBox(
-      height: _deviceSize.height * 0.8,
+      height: deviceSize.height * 0.8,
       child: StatefulBuilder(
         builder: (builderContext, setState) {
           return Column(
@@ -61,7 +61,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                   Flexible(
                     flex: 3,
                     child: UsernameTextField(
-                      formKey: _form,
+                      formKey: form,
                       onSaved: (value) => enteredText = value,
                       duplicate: () => duplicate,
                     ),
@@ -97,8 +97,8 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                           if (loading || updated) return;
 
                           duplicate = false;
-                          if (_form.currentState!.validate()) {
-                            _form.currentState!.save();
+                          if (form.currentState!.validate()) {
+                            form.currentState!.save();
                             setState(() {
                               loading = true;
                             });
@@ -108,7 +108,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                                 duplicate = true;
                                 loading = false;
                               });
-                              _form.currentState!.validate();
+                              form.currentState!.validate();
                             } else {
                               userProvider
                                   .updateUsername(enteredText!)
@@ -118,7 +118,7 @@ showSettingsDialog(BuildContext context, UserProvider userProvider,
                                   updated = true;
                                   loading = false;
                                 });
-                                _form.currentState!.reset();
+                                form.currentState!.reset();
                                 setTimeout(() {
                                   if (!closed) {
                                     setState(() {

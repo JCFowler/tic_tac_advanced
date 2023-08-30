@@ -10,22 +10,24 @@ import '../services/fire_service.dart';
 bool wasChecked = false;
 
 checkVersion(BuildContext context) async {
-  final _fireService = FireService();
+  final fireService = FireService();
 
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-  final version = await _fireService.getVersion(isAndriod: Platform.isAndroid);
+  final version = await fireService.getVersion(isAndriod: Platform.isAndroid);
 
   if (version != null) {
     // version.version = '2.0.0';
     if (version.isVersionNumberGreater(packageInfo.version)) {
-      showNewUpdateDialog(context).then((value) {
-        LaunchReview.launch(
-          androidAppId: version.link,
-          iOSAppId: version.link,
-          writeReview: false,
-        );
-      });
+      if (context.mounted) {
+        showNewUpdateDialog(context).then((value) {
+          LaunchReview.launch(
+            androidAppId: version.link,
+            iOSAppId: version.link,
+            writeReview: false,
+          );
+        });
+      }
     }
   }
 }

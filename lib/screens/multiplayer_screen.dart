@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -51,14 +49,6 @@ class MultiplayerScreen extends StatelessWidget {
 
 Widget _onlineButton(UserProvider userProvider) {
   if (userProvider.uid == '') return const LoadingAppButton();
-
-  // TODO: Remove this when connectivity has a fix on iOS
-  if (Platform.isIOS) {
-    return const NavigatorAppButton(
-      'onlinePlay',
-      routeName: OnlineScreen.routeName,
-    );
-  }
 
   return StreamBuilder(
     stream: ConnectionStatus.getInstance().stream,

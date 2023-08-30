@@ -29,7 +29,7 @@ class BackgroundGradient extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _BackgroundGradientState createState() => _BackgroundGradientState();
+  State<BackgroundGradient> createState() => _BackgroundGradientState();
 }
 
 class _BackgroundGradientState extends State<BackgroundGradient> {
@@ -93,16 +93,17 @@ class _BackgroundGradientState extends State<BackgroundGradient> {
           });
         },
       ),
-      Column(
-        children: [
-          Expanded(child: widget.child),
-          if (bannerAd != null)
-            SizedBox(
-              height: AdSize.banner.height.toDouble(),
-              child: AdWidget(ad: bannerAd!),
-            )
-        ],
-      )
+      widget.child,
+      // Column(
+      //   children: [
+      //     Expanded(child: widget.child),
+      //     if (bannerAd != null)
+      //       SizedBox(
+      //         height: AdSize.banner.height.toDouble(),
+      //         child: AdWidget(ad: bannerAd!),
+      //       )
+      //   ],
+      // )
     ]);
   }
 }

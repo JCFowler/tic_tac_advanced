@@ -9,7 +9,7 @@ class SpinningIcon extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _SpinningIconState createState() => _SpinningIconState();
+  State<SpinningIcon> createState() => _SpinningIconState();
 }
 
 class _SpinningIconState extends State<SpinningIcon>

@@ -18,7 +18,7 @@ class LoadingBar extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _LoadingBarState createState() => _LoadingBarState();
+  State<LoadingBar> createState() => _LoadingBarState();
 }
 
 Timer? timer;

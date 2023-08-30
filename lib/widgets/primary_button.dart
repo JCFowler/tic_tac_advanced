@@ -26,7 +26,7 @@ class PrimaryButton extends StatelessWidget {
       padding: padding,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: backgroundColor,
+          backgroundColor: backgroundColor,
           minimumSize: const Size(
             double.infinity,
             45,

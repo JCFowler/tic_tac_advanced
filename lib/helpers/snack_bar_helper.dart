@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
@@ -69,6 +70,8 @@ showInviteSnackBar(
       ),
     );
   } catch (error) {
-    print('Theres no Global Scoffold... $error');
+    if (kDebugMode) {
+      print('Theres no Global Scoffold... $error');
+    }
   }
 }

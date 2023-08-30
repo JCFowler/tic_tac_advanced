@@ -9,18 +9,20 @@ import '../providers/game_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/user_provider.dart';
 
-enum popUpSelection { howToPlay, restart, resign }
+enum PopUpSelection { howToPlay, restart, resign }
 
 class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool gameScreen;
   final String? title;
   final Function? onTap;
+  final Color? backgroundColor;
 
   const GameAppBar({
     Key? key,
     this.gameScreen = false,
     this.onTap,
     this.title,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -28,9 +30,9 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _userProvider = Provider.of<UserProvider>(context);
-    final _gameProvider = Provider.of<GameProvider>(context);
-    final _localeProvider = Provider.of<LocaleProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final gameProvider = Provider.of<GameProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     return AppBar(
       title: title != null
@@ -48,16 +50,16 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : null,
       centerTitle: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: backgroundColor ?? Colors.transparent,
       elevation: 0,
       iconTheme: IconThemeData(
         color: gameScreen ? Colors.black87 : Colors.white,
       ),
       actions: _getActions(
         context,
-        _userProvider,
-        _gameProvider,
-        _localeProvider,
+        userProvider,
+        gameProvider,
+        localeProvider,
       ),
     );
   }
@@ -73,36 +75,36 @@ class GameAppBar extends StatelessWidget implements PreferredSizeWidget {
       return [
         PopupMenuButton(
           icon: const Icon(Icons.more_vert),
-          onSelected: (popUpSelection selectedValue) {
+          onSelected: (PopUpSelection selectedValue) {
             switch (selectedValue) {
-              case popUpSelection.howToPlay:
+              case PopUpSelection.howToPlay:
                 showHowToPlayDialog(context);
                 break;
-              case popUpSelection.restart:
+              case PopUpSelection.restart:
                 gameProvider.gameRestart();
                 break;
-              case popUpSelection.resign:
+              case PopUpSelection.resign:
                 break;
             }
           },
           itemBuilder: (_) => [
             PopupMenuItem(
+              value: PopUpSelection.howToPlay,
               child: Text(translate('howToPlay')),
-              value: popUpSelection.howToPlay,
             ),
             if (gameProvider.gameDoc.isEmpty)
               PopupMenuItem(
+                value: PopUpSelection.restart,
                 child: Text(translate('restart')),
-                value: popUpSelection.restart,
               )
             // gameProvider.gameDoc.isNotEmpty
             //     ? PopupMenuItem(
             //         child: Text(translate('resign')),
-            //         value: popUpSelection.resign,
+            //         value: PopUpSelection.resign,
             //       )
             //     : PopupMenuItem(
             //         child: Text(translate('restart')),
-            //         value: popUpSelection.restart,
+            //         value: PopUpSelection.restart,
             //       )
           ],
         ),

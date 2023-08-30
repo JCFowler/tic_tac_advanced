@@ -69,6 +69,7 @@ Widget dialogBottomSubmitButtonComponent({
     onPressed: () => onPressed(),
     style: ElevatedButton.styleFrom(
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      backgroundColor: backgroundColor ?? backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(10),
@@ -79,7 +80,6 @@ Widget dialogBottomSubmitButtonComponent({
         double.infinity,
         40,
       ),
-      primary: backgroundColor ?? backgroundColor,
     ),
     child: loading
         ? const FittedBox(

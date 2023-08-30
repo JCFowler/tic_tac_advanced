@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +11,6 @@ import '../providers/game_provider.dart';
 import '../widgets/game_app_bar.dart';
 import '../widgets/game_number.dart';
 import '../widgets/number_board.dart';
-import '../widgets/score_board.dart';
 
 class GameScreen extends StatefulWidget {
   static const routeName = '/game';
@@ -20,7 +18,7 @@ class GameScreen extends StatefulWidget {
   const GameScreen({Key? key}) : super(key: key);
 
   @override
-  _GameScreenState createState() => _GameScreenState();
+  State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
@@ -37,8 +35,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
 
     if (result != null && result) {
-      Provider.of<GameProvider>(context, listen: false).leaveGame();
-      Provider.of<AdProvider>(context, listen: false).showInterstitialAd();
+      if (context.mounted) {
+        Provider.of<GameProvider>(context, listen: false).leaveGame();
+        Provider.of<AdProvider>(context, listen: false).showInterstitialAd();
+      }
     }
     return result ?? false;
   }
@@ -80,6 +80,57 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void dispose() {
     _numberController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Consumer<GameProvider>(
+        builder: (ctx, game, _) => Scaffold(
+          appBar: GameAppBar(
+            gameScreen: true,
+            // To change the color of the top part of the screen.
+            backgroundColor: game.player == Player.Player1
+                ? Theme.of(context).scaffoldBackgroundColor
+                : game.playerColor(Player.Player2),
+          ),
+          body: Container(
+            // To change the color of the bottom part of the screen.
+            color: game.player == Player.Player1
+                ? game.playerColor(Player.Player1)
+                : Theme.of(context).scaffoldBackgroundColor,
+            child: SafeArea(
+              child: Stack(
+                children: [
+                  _backgroundGradient(game),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RotationTransition(
+                        turns: const AlwaysStoppedAnimation(180 / 360),
+                        child: NumberBoard(
+                          Player.Player2,
+                          game.getPlayerUsername(Player.Player2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: _gameBoard(game),
+                      ),
+                      NumberBoard(
+                        Player.Player1,
+                        game.getPlayerUsername(Player.Player1),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _backgroundGradient(GameProvider game) {
@@ -162,121 +213,76 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Widget _gameBoard(GameProvider game) {
-    return Expanded(
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: 9,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-        ),
-        itemBuilder: (ctx, index) {
-          return GestureDetector(
-            onTap: () => game.addMark(index),
-            child: DragTarget<int>(
-              builder: (
-                BuildContext context,
-                List<dynamic> accepted,
-                List<dynamic> rejected,
-              ) {
-                return AnimatedContainer(
-                  curve: Curves.elasticIn,
-                  duration: _animationDuration(game, index),
-                  decoration: BoxDecoration(
-                    color: _getGameBoxColors(game, index),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: _changeBorder(game, index),
-                  ),
-                  child: Center(
-                    child: game.gameMarks[index] != null
-                        ? game.gameDoc == ''
-                            ? RotationTransition(
-                                turns: game.player == Player.Player2
-                                    ? _rotateAnimationFirst!
-                                    : _rotateAnimationSecond!,
-                                child: GameNumber(
-                                  game.gameMarks[index]!,
-                                  game.gameOver &&
-                                      game.winningLine.contains(index),
-                                ),
-                              )
-                            : GameNumber(
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 9,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+      ),
+      itemBuilder: (ctx, index) {
+        return GestureDetector(
+          onTap: () => game.addMark(index),
+          child: DragTarget<int>(
+            builder: (
+              BuildContext context,
+              List<dynamic> accepted,
+              List<dynamic> rejected,
+            ) {
+              return AnimatedContainer(
+                curve: Curves.elasticIn,
+                duration: _animationDuration(game, index),
+                decoration: BoxDecoration(
+                  color: _getGameBoxColors(game, index),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: _changeBorder(game, index),
+                ),
+                child: Center(
+                  child: game.gameMarks[index] != null
+                      ? game.gameDoc == ''
+                          ? RotationTransition(
+                              turns: game.player == Player.Player2
+                                  ? _rotateAnimationFirst!
+                                  : _rotateAnimationSecond!,
+                              child: GameNumber(
                                 game.gameMarks[index]!,
                                 game.gameOver &&
                                     game.winningLine.contains(index),
-                              )
-                        : const Text(''),
-                  ),
-                );
-              },
-              onAccept: (int data) {
-                game.addMark(index);
-                setState(() {
-                  hover = -1;
-                });
-              },
-              onLeave: (int? data) {
-                setState(() {
-                  hover = -1;
-                });
-              },
-              onWillAccept: (int? data) {
-                if (game.gameMarks[index] == null ||
-                    data! > game.gameMarks[index]!.number) {
-                  setState(() {
-                    hover = index;
-                  });
-                }
-                return true;
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        appBar: const GameAppBar(gameScreen: true),
-        body: SafeArea(
-          child: Consumer<GameProvider>(
-            builder: (ctx, game, _) => Stack(
-              children: [
-                _backgroundGradient(game),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RotationTransition(
-                      turns: const AlwaysStoppedAnimation(180 / 360),
-                      child: NumberBoard(Player.Player2,
-                          game.getPlayerUsername(Player.Player2)),
-                    ),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Row(
-                          children: [
-                            _gameBoard(game),
-                            const ScoreBoard(),
-                          ],
-                        ),
-                      ),
-                    ),
-                    NumberBoard(
-                      Player.Player1,
-                      game.getPlayerUsername(Player.Player1),
-                    ),
-                  ],
+                              ),
+                            )
+                          : GameNumber(
+                              game.gameMarks[index]!,
+                              game.gameOver && game.winningLine.contains(index),
+                            )
+                      : const Text(''),
                 ),
-              ],
-            ),
+              );
+            },
+            onAccept: (int data) {
+              game.addMark(index);
+              setState(() {
+                hover = -1;
+              });
+            },
+            onLeave: (int? data) {
+              setState(() {
+                hover = -1;
+              });
+            },
+            onWillAccept: (int? data) {
+              if (game.gameMarks[index]?.player != game.player &&
+                  (game.gameMarks[index] == null ||
+                      data! > game.gameMarks[index]!.number &&
+                          game.lastMovePosition != index)) {
+                setState(() {
+                  hover = index;
+                });
+              }
+              return true;
+            },
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -20,7 +20,7 @@ showFriendsDialog(
   GameProvider gameProvider, {
   bool showDelete = true,
 }) {
-  final _form = GlobalKey<FormState>();
+  final form = GlobalKey<FormState>();
 
   String? enteredText;
   bool loading = false;
@@ -56,7 +56,7 @@ showFriendsDialog(
                   Flexible(
                     flex: 3,
                     child: Form(
-                      key: _form,
+                      key: form,
                       child: SizedBox(
                         height: 100,
                         child: TextFormField(
@@ -116,8 +116,8 @@ showFriendsDialog(
                               noUserFound = false;
                             });
 
-                            if (_form.currentState!.validate()) {
-                              _form.currentState!.save();
+                            if (form.currentState!.validate()) {
+                              form.currentState!.save();
                               setState(() {
                                 loading = true;
                               });
@@ -130,7 +130,7 @@ showFriendsDialog(
                                   noUserFound = true;
                                 });
 
-                                _form.currentState!.validate();
+                                form.currentState!.validate();
                               } else {
                                 await fireService.addFriend(
                                     userProvider.user!, friend);
@@ -144,8 +144,10 @@ showFriendsDialog(
                                     });
                                   }
                                 }, 2500);
-                                _form.currentState!.reset();
-                                FocusScope.of(builderContext).unfocus();
+                                form.currentState!.reset();
+                                if (context.mounted) {
+                                  FocusScope.of(builderContext).unfocus();
+                                }
                               }
 
                               setState(() {

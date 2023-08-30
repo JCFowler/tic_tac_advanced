@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/constants.dart';
 import '../providers/game_provider.dart';
-import 'game_board_number.dart';
+import 'board_number.dart';
 
 class NumberBoard extends StatelessWidget {
   final Player player;
@@ -15,49 +15,66 @@ class NumberBoard extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  bool _canSelectNumber(GameProvider game, bool used) {
-    if (game.gameType != GameType.Local && player == Player.Player2) {
-      return false;
-    }
-
-    if (player == game.player && !used && !game.gameOver) {
-      return true;
-    }
-
-    return false;
-  }
-
-  Widget _numberWidget(int key, bool value, double width) {
-    return GameBoardNumber(
-      number: key,
-      player: player,
-      used: key == 1 ? false : value,
-      width: width / 7,
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _buildUserNameTemplate(context),
+        Consumer<GameProvider>(
+          builder: (ctx, game, _) => Row(
+            children: _buildNumberList(
+              game.numbers(player),
+              context,
+              game,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _getNumbers(
+  Widget _buildUserNameTemplate(BuildContext context) {
+    if (username == '') return const SizedBox.shrink();
+
+    final usernameTextWidget = Text(
+      username,
+      style: const TextStyle(
+        fontSize: 24,
+      ),
+    );
+
+    return Container(
+      alignment: Alignment.center,
+      child: player == Player.Player1
+          ? usernameTextWidget
+          : RotationTransition(
+              turns: const AlwaysStoppedAnimation(180 / 360),
+              child: usernameTextWidget,
+            ),
+    );
+  }
+
+  List<Widget> _buildNumberList(
       Map<int, bool> numbers, BuildContext context, GameProvider game) {
     double width = MediaQuery.of(context).size.width;
     List<Widget> list = [];
     numbers.forEach((key, value) {
       list.add(
-        _canSelectNumber(game, key == 1 ? false : value)
-            ? Draggable<int>(
+        game.canSelectNumber(player, key == 1 ? false : value)
+            ? Draggable(
                 data: key,
                 maxSimultaneousDrags: 1,
                 onDragStarted: () => game.changeSelectedNumber(key),
                 onDraggableCanceled: (_, __) => game.changeSelectedNumber(-1),
+                onDragCompleted: () => game.changeSelectedNumber(-1),
                 ignoringFeedbackSemantics: false,
-                child: _numberWidget(key, value, width),
-                feedback: Material(
-                  child: player == Player.Player1
-                      ? _numberWidget(key, value, width)
-                      : RotationTransition(
-                          turns: const AlwaysStoppedAnimation(180 / 360),
-                          child: _numberWidget(key, value, width)),
-                ),
+                feedback: player == Player.Player1
+                    ? _numberWidget(key, value, width)
+                    : RotationTransition(
+                        turns: const AlwaysStoppedAnimation(180 / 360),
+                        child: _numberWidget(key, value, width)),
                 childWhenDragging: _numberWidget(key, value, width),
+                child: _numberWidget(key, value, width),
               )
             : _numberWidget(key, value, width),
       );
@@ -65,35 +82,12 @@ class NumberBoard extends StatelessWidget {
     return list;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (username != '')
-          Container(
-            alignment: Alignment.center,
-            height: 25,
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.elliptical(1000, 200),
-                topRight: Radius.elliptical(1000, 200),
-              ),
-            ),
-            child: player == Player.Player1
-                ? Text(username)
-                : RotationTransition(
-                    turns: const AlwaysStoppedAnimation(180 / 360),
-                    child: Text(username),
-                  ),
-          ),
-        Consumer<GameProvider>(
-          builder: (ctx, game, _) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _getNumbers(game.numbers(player), context, game),
-          ),
-        ),
-      ],
+  Widget _numberWidget(int key, bool value, double width) {
+    return BoardNumber(
+      number: key,
+      player: player,
+      used: key == 1 ? false : value,
+      width: width / 7,
     );
   }
 }

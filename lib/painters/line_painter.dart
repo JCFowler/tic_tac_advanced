@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:tic_tac_advanced/models/constants.dart';
 
@@ -17,9 +15,9 @@ class LinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (game.gameOver) {
-      final _dividedSize = size.width / 3.0;
+      final dividedSize = size.width / 3.0;
 
-      _paintLine(canvas, game.winningLine, _dividedSize, _progress, size);
+      _paintLine(canvas, game.winningLine, dividedSize, _progress, size);
     }
   }
 
@@ -34,7 +32,7 @@ class LinePainter extends CustomPainter {
 
   void _paintLine(Canvas canvas, List<int> winningLine, double dividedSize,
       double progress, Size size) {
-    final _paint = Paint()
+    final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 7
       ..strokeCap = StrokeCap.round
@@ -61,7 +59,7 @@ class LinePainter extends CustomPainter {
     //   // stops: const [0.4, 0.5, 0.6],
     // ).createShader(Offset.zero & size);
 
-    final _blackPaint = Paint()
+    final blackPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8
       ..color = Colors.black
@@ -111,7 +109,7 @@ class LinePainter extends CustomPainter {
       }
     }
 
-    canvas.drawLine(offX, offY, _blackPaint);
-    canvas.drawLine(offX, offY, _paint);
+    canvas.drawLine(offX, offY, blackPaint);
+    canvas.drawLine(offX, offY, paint);
   }
 }

@@ -1,9 +1,6 @@
 name: tic_tac_advanced
 description: New way to play Tic Tac Toe
-
-# The following line prevents the package from being accidentally published to
-# pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none' 
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -18,14 +15,14 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
      sdk: flutter
-  intl: ^0.18.1
+  intl: ^0.18.0
   linter: ^1.7.0
   provider: ^6.0.0
   page_transition: "^2.0.2"
@@ -42,6 +39,7 @@ dependencies:
   package_info_plus: ^4.1.0
   connectivity_plus: ^4.0.2
   google_mobile_ads: ^3.0.0
+  test_api: 0.5.2
 
 dev_dependencies:
   flutter_lints: ^2.0.2
@@ -61,22 +59,16 @@ flutter_native_splash:
   ios: true
   android: true
 
-
-# dependency_overrides:
-#   args: 2.1.1
+dependency_overrides:
+  test_api: 0.5.2
+  matcher: 0.12.16
 
 flutter:
   uses-material-design: true
   generate: true
-
   assets:
-    - assets/images/tic-tac-advanced.png
-    - assets/images/tic-tac-dark.png
-    - assets/images/how-to-play-1.png
-    - assets/images/how-to-play-2.png
-    - assets/audio/move.wav
-    - assets/audio/win.wav
-    - assets/audio/win-long.wav
+    - assets/images/
+    - assets/audio/
 
   fonts:
     - family: Acme

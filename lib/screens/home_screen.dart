@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final _deviceSize = MediaQuery.of(context).size;
+    final deviceSize = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: const GameAppBar(),
@@ -43,19 +43,19 @@ class _HomeScreenState extends State<HomeScreen> {
       body: BackgroundGradient(
         child: Column(
           children: [
-            SizedBox(height: _deviceSize.height * 0.1),
+            SizedBox(height: deviceSize.height * 0.1),
             SizedBox(
-              height: _deviceSize.height * 0.4,
+              height: deviceSize.height * 0.4,
               child: Image.asset(
                 'assets/images/tic-tac-dark.png',
                 fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 10),
-            Expanded(
+            const Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: const [
+                children: [
                   NavigatorAppButton(
                     'singlePlayer',
                     routeName: SinglePlayerScreen.routeName,

@@ -23,7 +23,7 @@ class OnlineScreen extends StatefulWidget {
   const OnlineScreen({Key? key}) : super(key: key);
 
   @override
-  _OnlineScreenState createState() => _OnlineScreenState();
+  State<OnlineScreen> createState() => _OnlineScreenState();
 }
 
 class _OnlineScreenState extends State<OnlineScreen> {
@@ -40,21 +40,21 @@ class _OnlineScreenState extends State<OnlineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final _gameProvider = Provider.of<GameProvider>(context, listen: false);
-    final _userProvider = Provider.of<UserProvider>(context);
-    final _deviceSize = MediaQuery.of(context).size;
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context);
+    final deviceSize = MediaQuery.of(context).size;
 
     final topPadding = MediaQuery.of(context).padding.top +
         const GameAppBar().preferredSize.height -
         10;
     return Scaffold(
       appBar: GameAppBar(
-        title: _userProvider.username,
+        title: userProvider.username,
         onTap: () async {
           await showChangeUsernameDialog(
             context,
             fireService: _fireService,
-            userProvider: _userProvider,
+            userProvider: userProvider,
           );
         },
       ),
@@ -65,8 +65,8 @@ class _OnlineScreenState extends State<OnlineScreen> {
           child: Column(
             children: [
               Divider(
-                indent: _deviceSize.width * 0.2,
-                endIndent: _deviceSize.width * 0.2,
+                indent: deviceSize.width * 0.2,
+                endIndent: deviceSize.width * 0.2,
                 color: Theme.of(context).secondaryHeaderColor,
                 thickness: 1.5,
               ),
@@ -80,7 +80,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
                     horizontal: 15,
                     vertical: 5,
                   ),
-                  width: _deviceSize.width * 0.9,
+                  width: deviceSize.width * 0.9,
                   decoration: BoxDecoration(
                     color: Theme.of(context).dialogBackgroundColor,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -88,28 +88,28 @@ class _OnlineScreenState extends State<OnlineScreen> {
                       color: Colors.black54,
                     ),
                   ),
-                  child: _gameStream(context, _gameProvider),
+                  child: _gameStream(context, gameProvider),
                 ),
               ),
               SizedBox(
-                height: _deviceSize.height * 0.1,
+                height: deviceSize.height * 0.1,
                 child: FittedBox(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _bottomBtn(
                         context,
-                        _gameProvider,
+                        gameProvider,
                         translate('friends'),
                         true,
-                        _deviceSize.height * 0.8,
+                        deviceSize.height * 0.8,
                       ),
                       _bottomBtn(
                         context,
-                        _gameProvider,
+                        gameProvider,
                         translate('hostGame'),
                         false,
-                        _deviceSize.height * 0.8,
+                        deviceSize.height * 0.8,
                       ),
                     ],
                   ),
@@ -132,9 +132,7 @@ class _OnlineScreenState extends State<OnlineScreen> {
             child: CircularProgressIndicator(),
           );
         }
-        print('HIT!!');
         final games = streamSnapshot.data!;
-        print(games);
         return MediaQuery.removePadding(
           context: context,
           removeTop: true,

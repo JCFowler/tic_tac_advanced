@@ -260,7 +260,7 @@ List<Widget> _getRematchButtons(
           PrimaryButton(
             translate('no'),
             expanded: true,
-            backgroundColor: Theme.of(context).errorColor,
+            backgroundColor: Theme.of(context).colorScheme.error,
             onPressed: () => game.updateRematch(false),
           ),
           const SizedBox(width: 10),
@@ -288,7 +288,7 @@ List<Widget> _getRematchButtons(
     widgets.add(
       PrimaryButton(
         translate('quit'),
-        backgroundColor: Theme.of(context).errorColor,
+        backgroundColor: Theme.of(context).colorScheme.error,
         onPressed: () {
           var count = 0;
           Navigator.popUntil(context, (route) {

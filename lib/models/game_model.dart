@@ -124,6 +124,7 @@ class MultiplayerNames {
         gameModel.addedRematch,
       );
     }
+    return null;
   }
 }
 

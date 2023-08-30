@@ -52,7 +52,7 @@ Future<dynamic> showLoadingDialog(BuildContext context, String title) {
           onPressed: () {
             Navigator.pop(context, 'cancel');
           },
-          backgroundColor: Theme.of(context).errorColor,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       ],
     ),

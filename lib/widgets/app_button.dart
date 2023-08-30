@@ -5,11 +5,6 @@ import '../helpers/translate_helper.dart';
 import '../models/constants.dart';
 import '../providers/game_provider.dart';
 
-final Paint _paint = Paint()
-  ..style = PaintingStyle.stroke
-  ..strokeWidth = 6
-  ..color = Colors.purple.shade600;
-
 class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
@@ -24,47 +19,58 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _deviceSize = MediaQuery.of(context).size;
+    final deviceSize = MediaQuery.of(context).size;
 
     final translatedText = translate(text);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       width: double.infinity,
-      height: _deviceSize.height * 0.1,
+      height: deviceSize.height * 0.1,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).dialogBackgroundColor,
-          side: BorderSide(
-            width: 1.0,
-            color: onTap == null ? Colors.transparent : Colors.purple,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+            side: BorderSide(
+              color: onTap == null ? Colors.transparent : Colors.purple,
+              width: 2,
+            ),
           ),
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           elevation: 20,
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: child ??
               FittedBox(
-                child: Stack(
-                  children: [
-                    Text(
-                      translatedText,
-                      style: TextStyle(
-                        fontSize: 40,
-                        foreground: _paint,
-                      ),
-                    ),
-                    Text(
-                      translatedText,
-                      style: TextStyle(
-                        fontSize: 40,
-                        color: onTap == null
-                            ? Colors.grey.shade400
-                            : Theme.of(context).scaffoldBackgroundColor,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  translatedText,
+                  style: TextStyle(
+                    fontSize: 42,
+                    color: onTap == null
+                        ? Colors.grey.shade400
+                        : Theme.of(context).scaffoldBackgroundColor,
+                    shadows: [
+                      Shadow(
+                          // bottomLeft
+                          offset: const Offset(-0.9, -0.9),
+                          color: Colors.purple.shade600),
+                      Shadow(
+                          // bottomRight
+                          offset: const Offset(0.9, -0.9),
+                          color: Colors.purple.shade600),
+                      Shadow(
+                          // topRight
+                          offset: const Offset(0.9, 0.9),
+                          color: Colors.purple.shade600),
+                      Shadow(
+                          // topLeft
+                          offset: const Offset(-0.9, 0.9),
+                          color: Colors.purple.shade600),
+                    ],
+                  ),
                 ),
               ),
         ),

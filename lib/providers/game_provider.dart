@@ -29,7 +29,7 @@ class GameProvider with ChangeNotifier {
   GameModel? _multiplayerData;
   MultiplayerNames? _multiplayerNames;
 
-  late final AudioCache _audioCache = AudioCache(
+  late final AudioCache audioCache = AudioCache(
     prefix: 'assets/audio/',
     // fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
   )..loadAll(['move.wav', 'win.wav', 'win-long.wav']);
@@ -280,6 +280,12 @@ class GameProvider with ChangeNotifier {
   }
 
   void addMark(int position) {
+    if (lastMovePosition == position ||
+        _gameMarks[position]?.player == player) {
+      return;
+    }
+
+    // _audioCache.play('move.wav');
     if (_gameTied) {
       _showDialog(translate('gameTied'), yesText: translate('playAgain'));
     }
@@ -292,7 +298,6 @@ class GameProvider with ChangeNotifier {
     }
 
     if (_selectedNumber != -1 && !gameOver) {
-      // _audioCache.play('move.wav');
       if (_gameMarks[position]!.number < _selectedNumber) {
         _gameMarks[position] = Mark(_selectedNumber, _player);
         final gameFinished = checkForWinningLine();
@@ -603,5 +608,17 @@ class GameProvider with ChangeNotifier {
     if (popScreen) {
       Navigator.of(_buildContext!).pop();
     }
+  }
+
+  bool canSelectNumber(Player currentPlayer, bool used) {
+    if (gameType != GameType.Local && player == Player.Player2) {
+      return false;
+    }
+
+    if (player == currentPlayer && !used && !gameOver) {
+      return true;
+    }
+
+    return false;
   }
 }

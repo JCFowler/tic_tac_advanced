@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 bool userWasInvited(List<Invited> invites, String username) {
   for (var inv in invites) {
@@ -116,7 +117,9 @@ class AppUser {
         return user;
       }
     } catch (error) {
-      print('Error in creating friends.. $error');
+      if (kDebugMode) {
+        print('Error in creating friends.. $error');
+      }
     }
 
     return null;

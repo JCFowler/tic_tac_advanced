@@ -11,7 +11,7 @@ Future<dynamic> showChangeUsernameDialog(
   FireService? fireService,
   UserProvider? userProvider,
 }) async {
-  final _form = GlobalKey<FormState>();
+  final form = GlobalKey<FormState>();
 
   String? enteredText;
   bool duplicate = false;
@@ -48,7 +48,7 @@ Future<dynamic> showChangeUsernameDialog(
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).errorColor,
+                  color: Theme.of(context).colorScheme.error,
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(10),
                   ),
@@ -70,7 +70,7 @@ Future<dynamic> showChangeUsernameDialog(
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: UsernameTextField(
-            formKey: _form,
+            formKey: form,
             onSaved: (value) => enteredText = value,
             duplicate: () => duplicate,
           ),
@@ -81,14 +81,14 @@ Future<dynamic> showChangeUsernameDialog(
             loading: loading,
             onPressed: () async {
               duplicate = false;
-              if (_form.currentState!.validate()) {
-                _form.currentState!.save();
+              if (form.currentState!.validate()) {
+                form.currentState!.save();
                 setState(() {
                   loading = true;
                 });
                 if (await fireService!.doesUsernameExist(enteredText!)) {
                   duplicate = true;
-                  _form.currentState!.validate();
+                  form.currentState!.validate();
                   setState(() {
                     loading = false;
                   });

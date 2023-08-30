@@ -69,13 +69,13 @@ extension AiHelper on GameProvider {
   }
 
   Map<String, int> _aiRandomMove() {
-    final _random = Random();
+    final random = Random();
 
     final usableNumbers = _getUsableNumbers(numbers(Player.Player2));
-    var numberToUse = usableNumbers[_random.nextInt(usableNumbers.length)];
+    var numberToUse = usableNumbers[random.nextInt(usableNumbers.length)];
 
     final availablePos = _getAvailablePositions(gameMarks, numberToUse);
-    final position = availablePos[_random.nextInt(availablePos.length)];
+    final position = availablePos[random.nextInt(availablePos.length)];
 
     return {'numberToUse': numberToUse, 'position': position};
   }
@@ -232,7 +232,8 @@ extension AiHelper on GameProvider {
     final List<int> availablePos = [];
 
     gameMarks.forEach((key, mark) {
-      if (mark.player == Player.None || mark.number < numberToUse) {
+      if (mark.player == Player.None ||
+          mark.number < numberToUse && key != lastMovePosition) {
         availablePos.add(key);
       }
     });

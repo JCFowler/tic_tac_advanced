@@ -4,7 +4,7 @@ import 'package:tic_tac_advanced/helpers/translate_helper.dart';
 import '../base_dialog_components.dart';
 
 showHowToPlayDialog(BuildContext context, {firstTime = false}) {
-  final _deviceSize = MediaQuery.of(context).size;
+  final deviceSize = MediaQuery.of(context).size;
   String bullet = "\u2022";
 
   return basicDialogComponent(
@@ -18,7 +18,7 @@ showHowToPlayDialog(BuildContext context, {firstTime = false}) {
         left: 20,
       ),
       child: SizedBox(
-        height: _deviceSize.height * 0.8,
+        height: deviceSize.height * 0.8,
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -31,7 +31,7 @@ showHowToPlayDialog(BuildContext context, {firstTime = false}) {
               _text(context, translate('htpTitleOverview'), isTitle: true),
               _text(context, translate('htpOne')),
               SizedBox(
-                height: _deviceSize.height * 0.2,
+                height: deviceSize.height * 0.2,
                 child: Image.asset(
                   'assets/images/how-to-play-1.png',
                   fit: BoxFit.contain,
@@ -41,7 +41,7 @@ showHowToPlayDialog(BuildContext context, {firstTime = false}) {
               _text(context, '$bullet ${translate('howToMoveOne')}'),
               _text(context, '$bullet ${translate('howToMoveTwo')}'),
               SizedBox(
-                height: _deviceSize.height * 0.1,
+                height: deviceSize.height * 0.1,
                 child: Image.asset(
                   'assets/images/how-to-play-2.png',
                   fit: BoxFit.contain,

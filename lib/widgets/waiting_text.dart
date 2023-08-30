@@ -9,7 +9,7 @@ class WaitingText extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _WaitingTextState createState() => _WaitingTextState();
+  State<WaitingText> createState() => _WaitingTextState();
 }
 
 class _WaitingTextState extends State<WaitingText>

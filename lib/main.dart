@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
             dialogBackgroundColor: Colors.blue.shade50.withOpacity(0.5),
             scaffoldBackgroundColor: Colors.blue.shade50,
             primaryTextTheme: const TextTheme(
-              headline6: TextStyle(color: Colors.blue),
+              titleLarge: TextStyle(color: Colors.blue),
             ),
             fontFamily: 'Acme',
           ),
