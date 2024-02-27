@@ -1,69 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../helpers/translate_helper.dart';
-import '../models/constants.dart';
-import '../providers/game_provider.dart';
 
 class ScoreBoard extends StatelessWidget {
-  const ScoreBoard({Key? key}) : super(key: key);
+  final int? player1Score;
+  final int? player2Score;
+
+  const ScoreBoard(
+      {Key? key, required this.player1Score, required this.player2Score})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 30,
-      height: 200,
+      width: double.infinity,
+      height: 30,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
-              Colors.red.withOpacity(0.8),
-              Colors.blue.withOpacity(0.8),
+              Colors.blue,
+              Colors.red,
             ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: const [0, 1],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            stops: [0, 1],
           ),
         ),
-        child: Consumer<GameProvider>(
-          builder: (ctx, game, _) => Wrap(
-            alignment: WrapAlignment.spaceAround,
-            direction: Axis.vertical,
-            runAlignment: WrapAlignment.center,
-            children: [
-              RotatedBox(
-                quarterTurns: 1,
-                child: Text(
-                  game.scores[Player.Player2].toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 20,
-                  ),
-                ),
+        child: Wrap(
+          alignment: WrapAlignment.spaceAround,
+          runAlignment: WrapAlignment.center,
+          children: [
+            Text(
+              '$player1Score',
+              style: TextStyle(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                fontSize: 20,
               ),
-              RotatedBox(
-                quarterTurns: 1,
-                child: Text(
-                  translate('wins'),
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                ),
+            ),
+            Text(
+              translate('wins'),
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).scaffoldBackgroundColor,
               ),
-              RotatedBox(
-                quarterTurns: 1,
-                child: Text(
-                  game.scores[Player.Player1].toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 20,
-                  ),
-                ),
+            ),
+            Text(
+              '$player2Score',
+              style: TextStyle(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                fontSize: 20,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

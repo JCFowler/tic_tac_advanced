@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
-import '../dialogs/dialogs/alert.dart';
 import '../dialogs/dialogs/loading.dart';
+import '../dialogs/dialogs/offline_rematch.dart';
 import '../dialogs/dialogs/online_rematch.dart';
 import '../helpers/ai_helper.dart';
 import '../helpers/snack_bar_helper.dart';
@@ -29,10 +29,7 @@ class GameProvider with ChangeNotifier {
   GameModel? _multiplayerData;
   MultiplayerNames? _multiplayerNames;
 
-  late final AudioCache audioCache = AudioCache(
-    prefix: 'assets/audio/',
-    // fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
-  )..loadAll(['move.wav', 'win.wav', 'win-long.wav']);
+  final audioPlayer = AudioPlayer();
 
   AnimationController? _numberController;
   BuildContext? _buildContext;
@@ -245,6 +242,7 @@ class GameProvider with ChangeNotifier {
     required AnimationController numberController,
     required BuildContext buildContext,
   }) {
+    // audioPlayer.setSourceUrl('assets/audio/move.wav');
     _multiplayerData = null;
     _numberController = numberController;
     _buildContext = buildContext;
@@ -263,7 +261,7 @@ class GameProvider with ChangeNotifier {
       setTimeout(() {
         changeSelectedNumber(lastMove.number);
         setTimeout(() {
-          // _audioCache.play('move.wav');
+          audioPlayer.play(AssetSource('/audio/move.wav'));
           _lastMovePosition = lastMove.position;
           _gameMarks[lastMove.position] = Mark(_selectedNumber, Player.Player2);
 
@@ -285,16 +283,9 @@ class GameProvider with ChangeNotifier {
       return;
     }
 
-    // _audioCache.play('move.wav');
+    audioPlayer.play(AssetSource('/audio/move.wav'));
     if (_gameTied) {
       _showDialog(translate('gameTied'), yesText: translate('playAgain'));
-    }
-    if (gameOver) {
-      _showDialog(
-        translate('gameFinished'),
-        content: getWinningContentString(),
-        yesText: 'playAgain',
-      );
     }
 
     if (_selectedNumber != -1 && !gameOver) {
@@ -383,7 +374,7 @@ class GameProvider with ChangeNotifier {
           increaseScore(p1Count >= 3 ? Player.Player1 : Player.Player2);
 
           notifyListeners();
-          // _audioCache.play('win-long.wav', mode: PlayerMode.LOW_LATENCY);
+          audioPlayer.play(AssetSource('/audio/win-long.wav'));
           setTimeout(() {
             _showDialog(
               translate('gameFinished'),
@@ -443,14 +434,14 @@ class GameProvider with ChangeNotifier {
         won: player == Player.Player1,
       );
     } else {
-      showAlertDialog(
+      showOfflineRematchDialog(
         _buildContext!,
-        title,
-        content: content,
-        singleButton: true,
-        yesBtnText: yesText,
+        wonPlayer: player,
+        titleColor: playerColor(player),
+        player1Score: scores[Player.Player1],
+        player2Score: scores[Player.Player2],
       ).then((value) {
-        if (value != null && value) {
+        if (value == true) {
           gameRestart();
         }
       });

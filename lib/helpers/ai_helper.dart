@@ -23,27 +23,14 @@ extension AiHelper on GameProvider {
     if (player == Player.Player2) {
       Map<String, int> aiNextMove = {};
       switch (gameType) {
-        case GameType.Random:
-          aiNextMove = _aiRandomMove();
-          break;
         case GameType.Easy:
-          var isAiFirstMove = true;
-          gameMarks.forEach((key, value) {
-            if (value.player == Player.Player2) {
-              isAiFirstMove = false;
-            }
-          });
+          bool isAiFirstMove = _isFirstMove();
           isAiFirstMove
               ? aiNextMove = _aiRandomMove()
               : aiNextMove = _aiBestMove(1);
           break;
         case GameType.Normal:
-          var isAiFirstMove = true;
-          gameMarks.forEach((key, value) {
-            if (value.player == Player.Player2) {
-              isAiFirstMove = false;
-            }
-          });
+          bool isAiFirstMove = _isFirstMove();
           isAiFirstMove
               ? aiNextMove = _aiRandomMove()
               : aiNextMove = _aiBestMove(2);
@@ -57,6 +44,15 @@ extension AiHelper on GameProvider {
 
       _aiPlayMove(aiNextMove['numberToUse']!, aiNextMove['position']!);
     }
+  }
+
+  bool _isFirstMove() {
+    for (int i = 0; i < gameMarks.length; i++) {
+      if (gameMarks[i]?.player == Player.Player2) {
+        return false;
+      }
+    }
+    return true;
   }
 
   _aiPlayMove(int numberToUse, int position) {
@@ -86,21 +82,15 @@ extension AiHelper on GameProvider {
     Map<String, int> bestMove = {'numberToUse': -1, 'position': -1};
 
     // Get All Numbers the players hasn't used yet.
-    final p1UsableNumbers = _getUsableNumbers(numbers(Player.Player1));
-    final p2UsableNumbers = _getUsableNumbers(numbers(Player.Player2));
+    final playerUsableNumbers = _getUsableNumbers(numbers(Player.Player1));
+    final aiUsableNumbers = _getUsableNumbers(numbers(Player.Player2));
 
-    for (var number in p2UsableNumbers) {
+    for (final number in aiUsableNumbers) {
       // Get All positions the select number can go to
       final availablePos = _getAvailablePositions(gameMarks, number);
-      for (var position in availablePos) {
-        // Make sure the AI moves no matter what.
-        if (bestMove['numberToUse'] == -1) {
-          bestMove.update('numberToUse', (value) => number);
-          bestMove.update('position', (value) => position);
-        }
-
-        final updatedP2Numbers = [...p2UsableNumbers];
-        updatedP2Numbers.removeWhere((element) => element == number);
+      for (final position in availablePos) {
+        final updatedAiUsableNumbers = [...aiUsableNumbers];
+        updatedAiUsableNumbers.removeWhere((element) => element == number);
 
         final board = Map<int, Mark>.from(gameMarks);
         board.update(position, (value) => Mark(number, Player.Player2));
@@ -115,8 +105,8 @@ extension AiHelper on GameProvider {
         var score = _minimax(
           board,
           {
-            Player.Player1: p1UsableNumbers,
-            Player.Player2: updatedP2Numbers,
+            Player.Player1: playerUsableNumbers,
+            Player.Player2: updatedAiUsableNumbers,
           },
           depth,
           Player.Player1,
@@ -125,6 +115,7 @@ extension AiHelper on GameProvider {
         );
 
         if (score > bestScore) {
+          // print('New Best Score: $score');
           bestScore = score;
           bestMove.update('numberToUse', (value) => number);
           bestMove.update('position', (value) => position);
@@ -232,32 +223,34 @@ extension AiHelper on GameProvider {
     final List<int> availablePos = [];
 
     gameMarks.forEach((key, mark) {
-      if (mark.player == Player.None ||
-          mark.number < numberToUse && key != lastMovePosition) {
+      if ((mark.player == Player.None || mark.player == Player.Player1) &&
+          (mark.number < numberToUse && key != lastMovePosition)) {
         availablePos.add(key);
       }
     });
+    // print('Number to use: $numberToUse');
+    // print(availablePos);
 
     return availablePos;
   }
 
   Player? _checkIfGameOver(Map<int, Mark> board) {
     for (var line in winningLines) {
-      var p1Count = 0;
-      var p2Count = 0;
+      var pCount = 0;
+      var aiCount = 0;
 
       for (var index in line) {
         if (board[index]!.player != Player.None) {
           if (board[index]!.player == Player.Player1) {
-            ++p1Count;
+            ++pCount;
           } else if (board[index]!.player == Player.Player2) {
-            ++p2Count;
+            ++aiCount;
           }
 
-          if (p1Count > 0 && p2Count > 0) break;
+          if (pCount > 0 && aiCount > 0) break;
 
-          if (p1Count >= 3) return Player.Player1;
-          if (p2Count >= 3) return Player.Player2;
+          if (pCount >= 3) return Player.Player1;
+          if (aiCount >= 3) return Player.Player2;
         } else {
           break;
         }
@@ -269,49 +262,50 @@ extension AiHelper on GameProvider {
   int _getBoardPoints(
       Map<int, Mark> board, Player player, Map<Player, List<int>> numbersLeft) {
     var totalScore = 0;
+    final pUsableNumbersPoints =
+        _getPointValueFromUsableNumbers(numbersLeft[Player.Player1]!);
+    final aiUsableNumbersPoints =
+        _getPointValueFromUsableNumbers(numbersLeft[Player.Player2]!);
+
+    // print('Player Usable Numbers Points: $pUsableNumbersPoints');
+    // print('AI Usable Numbers Points: $aiUsableNumbersPoints');
     for (var line in winningLines) {
-      var p1Count = 0;
-      var p2Count = 0;
+      var pCount = 0;
+      var aiCount = 0;
 
       for (var index in line) {
         if (board[index]!.player == Player.Player1) {
-          ++p1Count;
+          ++pCount;
         } else if (board[index]!.player == Player.Player2) {
-          ++p2Count;
+          ++aiCount;
         }
       }
+
       if (player == Player.Player1) {
-        p1Count == 2 ? totalScore += p1Count * 2 : totalScore += p1Count;
-        p2Count == 2 ? totalScore -= p2Count * 2 : totalScore -= p2Count;
-        totalScore +=
-            _getPointValueFromUsableNumbers(numbersLeft[Player.Player1]!) -
-                _getPointValueFromUsableNumbers(numbersLeft[Player.Player2]!);
+        pCount == 2 ? totalScore += pCount * 2 : totalScore += pCount;
+        aiCount == 2 ? totalScore -= aiCount * 2 : totalScore -= aiCount;
+        totalScore += pUsableNumbersPoints - aiUsableNumbersPoints;
       }
 
       if (player == Player.Player2) {
-        p1Count == 2 ? totalScore -= p1Count * 2 : totalScore -= p1Count;
-        p2Count == 2 ? totalScore += p2Count * 2 : totalScore += p2Count;
-        totalScore +=
-            _getPointValueFromUsableNumbers(numbersLeft[Player.Player2]!) -
-                _getPointValueFromUsableNumbers(numbersLeft[Player.Player1]!);
+        pCount == 2 ? totalScore -= pCount * 2 : totalScore -= pCount;
+        aiCount == 2 ? totalScore += aiCount * 2 : totalScore += aiCount;
+        totalScore += aiUsableNumbersPoints - pUsableNumbersPoints;
       }
     }
+    // print('Total Score: $totalScore, $player');
     return totalScore;
   }
 
   int _getPointValueFromUsableNumbers(List<int> playerNumbers) {
     var result = 0;
 
-    for (var num in playerNumbers) {
+    for (final num in playerNumbers) {
       switch (num) {
         case 2:
-          result += 1;
-          break;
         case 3:
-          result += 1;
-          break;
         case 4:
-          result += 2;
+          result += 1;
           break;
         case 5:
           result += 2;

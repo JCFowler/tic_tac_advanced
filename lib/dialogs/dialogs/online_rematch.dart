@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tic_tac_advanced/widgets/score_board.dart';
 
 import '../../helpers/translate_helper.dart';
 import '../../models/constants.dart';
@@ -67,6 +68,11 @@ Future<dynamic> showOnlineRematchDialog(
 
                 return Column(
                   children: [
+                    const SizedBox(height: 12),
+                    ScoreBoard(
+                      player1Score: game.scores[Player.Player1],
+                      player2Score: game.scores[Player.Player2],
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       child: Row(
@@ -76,9 +82,9 @@ Future<dynamic> showOnlineRematchDialog(
                             flex: 1,
                             child: _getRematchAnswer(
                               context,
-                              game.getStaticUsername(Player.Player2),
-                              game.playerColor(Player.Player2),
-                              player2Answer,
+                              game.getStaticUsername(Player.Player1),
+                              game.playerColor(Player.Player1),
+                              player1Answer,
                             ),
                           ),
                           const SizedBox(width: 5),
@@ -86,9 +92,9 @@ Future<dynamic> showOnlineRematchDialog(
                             flex: 1,
                             child: _getRematchAnswer(
                               context,
-                              game.getStaticUsername(Player.Player1),
-                              game.playerColor(Player.Player1),
-                              player1Answer,
+                              game.getStaticUsername(Player.Player2),
+                              game.playerColor(Player.Player2),
+                              player2Answer,
                             ),
                           ),
                         ],

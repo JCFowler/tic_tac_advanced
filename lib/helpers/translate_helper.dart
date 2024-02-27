@@ -27,8 +27,6 @@ String translate(String key, {dynamic args}) {
       return translations.multiplayer;
     case 'settings':
       return translations.settings;
-    case 'random':
-      return translations.random;
     case 'easy':
       return translations.easy;
     case 'normal':

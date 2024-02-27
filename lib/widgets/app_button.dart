@@ -39,7 +39,7 @@ class AppButton extends StatelessWidget {
             ),
           ),
           backgroundColor: Theme.of(context).dialogBackgroundColor,
-          elevation: 20,
+          elevation: 0,
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),

@@ -60,63 +60,66 @@ class _OnlineScreenState extends State<OnlineScreen> {
       ),
       extendBodyBehindAppBar: true,
       body: BackgroundGradient(
-        child: Padding(
-          padding: EdgeInsets.only(top: topPadding),
-          child: Column(
-            children: [
-              Divider(
-                indent: deviceSize.width * 0.2,
-                endIndent: deviceSize.width * 0.2,
-                color: Theme.of(context).secondaryHeaderColor,
-                thickness: 1.5,
-              ),
-              AppTitle(
-                translate('allGames'),
-                regularSize: false,
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 5,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.only(top: topPadding),
+            child: Column(
+              children: [
+                Divider(
+                  indent: deviceSize.width * 0.2,
+                  endIndent: deviceSize.width * 0.2,
+                  color: Theme.of(context).secondaryHeaderColor,
+                  thickness: 1.5,
+                ),
+                AppTitle(
+                  translate('allGames'),
+                  regularSize: false,
+                ),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 5,
+                    ),
+                    width: deviceSize.width * 0.9,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).dialogBackgroundColor,
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      border: Border.all(
+                        color: Colors.black54,
+                      ),
+                    ),
+                    child: _gameStream(context, gameProvider),
                   ),
-                  width: deviceSize.width * 0.9,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).dialogBackgroundColor,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: Border.all(
-                      color: Colors.black54,
+                ),
+                SizedBox(
+                  height: deviceSize.height * 0.1,
+                  child: FittedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _bottomBtn(
+                          context,
+                          gameProvider,
+                          translate('friends'),
+                          true,
+                          deviceSize.height * 0.8,
+                        ),
+                        _bottomBtn(
+                          context,
+                          gameProvider,
+                          translate('hostGame'),
+                          false,
+                          deviceSize.height * 0.8,
+                        ),
+                      ],
                     ),
                   ),
-                  child: _gameStream(context, gameProvider),
                 ),
-              ),
-              SizedBox(
-                height: deviceSize.height * 0.1,
-                child: FittedBox(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _bottomBtn(
-                        context,
-                        gameProvider,
-                        translate('friends'),
-                        true,
-                        deviceSize.height * 0.8,
-                      ),
-                      _bottomBtn(
-                        context,
-                        gameProvider,
-                        translate('hostGame'),
-                        false,
-                        deviceSize.height * 0.8,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 5),
-            ],
+                const SizedBox(height: 5),
+              ],
+            ),
           ),
         ),
       ),

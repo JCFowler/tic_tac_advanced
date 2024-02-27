@@ -23,11 +23,6 @@ class SinglePlayerScreen extends StatelessWidget {
             children: [
               AppTitle(translate('singlePlayer')),
               const NavigatorAppButton(
-                'random',
-                routeName: GameScreen.routeName,
-                gameType: GameType.Random,
-              ),
-              const NavigatorAppButton(
                 'easy',
                 routeName: GameScreen.routeName,
                 gameType: GameType.Easy,

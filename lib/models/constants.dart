@@ -2,8 +2,9 @@ import 'mark.dart';
 
 // ignore: constant_identifier_names
 enum Player { None, Player1, Player2 }
+
 // ignore: constant_identifier_names
-enum GameType { None, Local, Random, Easy, Normal, Hard }
+enum GameType { None, Local, Easy, Normal, Hard }
 
 const Map<int, bool> baseNumbersMap = {
   1: false,

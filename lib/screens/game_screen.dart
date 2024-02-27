@@ -28,6 +28,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   var hover = -1;
 
   Future<bool> _onWillPop() async {
+    final gameProvider = Provider.of<GameProvider>(context, listen: false);
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
+
+    if (gameProvider.winningLine.isNotEmpty) {
+      adProvider.showInterstitialAd();
+      return true;
+    }
+
     var result = await showAlertDialog(
       context,
       translate('exitGame'),
@@ -36,8 +44,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if (result != null && result) {
       if (context.mounted) {
-        Provider.of<GameProvider>(context, listen: false).leaveGame();
-        Provider.of<AdProvider>(context, listen: false).showInterstitialAd();
+        gameProvider.leaveGame();
+        adProvider.showInterstitialAd();
       }
     }
     return result ?? false;
@@ -84,6 +92,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Consumer<GameProvider>(
@@ -258,7 +267,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
               );
             },
-            onAccept: (int data) {
+            onAcceptWithDetails: (details) {
               game.addMark(index);
               setState(() {
                 hover = -1;
@@ -269,10 +278,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 hover = -1;
               });
             },
-            onWillAccept: (int? data) {
+            onWillAcceptWithDetails: (details) {
               if (game.gameMarks[index]?.player != game.player &&
                   (game.gameMarks[index] == null ||
-                      data! > game.gameMarks[index]!.number &&
+                      details.data > game.gameMarks[index]!.number &&
                           game.lastMovePosition != index)) {
                 setState(() {
                   hover = index;

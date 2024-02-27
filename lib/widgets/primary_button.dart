@@ -6,6 +6,7 @@ class PrimaryButton extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final EdgeInsets padding;
+  final double fontSize;
 
   /// Use expanded if there are more than 1 button in a row.
   final bool expanded;
@@ -17,6 +18,7 @@ class PrimaryButton extends StatelessWidget {
     this.backgroundColor = Colors.purple,
     this.textColor = Colors.white,
     this.padding = const EdgeInsets.all(5),
+    this.fontSize = 30,
     Key? key,
   }) : super(key: key);
 
@@ -38,7 +40,7 @@ class PrimaryButton extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 30,
+              fontSize: fontSize,
               color: textColor,
             ),
           ),
